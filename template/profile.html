@@ -1,0 +1,32 @@
+{% extends 'dashboard.html' %}
+{% block title %}Profile{% endblock title %}
+{% block dashboard %}
+<section class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title text-center">Profile</h4>
+                    <div class="mb-3">
+                        <label for="smtp_server" class="form-label">Username</label>
+                        <p class="form-control">{{ user.username }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="smtp_port" class="form-label">Email</label>
+                        <p class="form-control">{{ user.email }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">First Name</label>
+                        <p class="form-control">{{ user.first_name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Last Name</label>
+                        <p class="form-control">{{ user.last_name }}</p>
+                    </div>
+                    <a href="{% url 'edit-profile' %}" class="btn btn-primary">Edit Profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

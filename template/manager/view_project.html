@@ -1,0 +1,172 @@
+{% extends 'manager/dashboard.html' %}
+{% block manager_board %}
+<div class="jumbotron mb-4">
+    <h2 class="display-4 text-center mb-0 capitalize">{{ project.name }}</h2>
+    <p class="manager text-center capitalize">{{ project.description }}</p>
+    <hr class="my-2">
+
+    <div class="row mb-3">
+        <div class="col-md-4 text-start">
+            <strong>Client Name:</strong>
+        </div>
+        <div class="col-md-8 text-start">
+            {{ project.client_name }}
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4 text-start">
+            <strong>Status:</strong>
+        </div>
+        <div class="col-md-8 text-start">
+            <span class="badge" id="project-status-badge">{{ project.status }}</span>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4 text-start">
+            <strong>Start Date:</strong>
+        </div>
+        <div class="col-md-8 text-start">
+            {{ project.started }}
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4 text-start">
+            <strong>Due Date:</strong>
+        </div>
+        <div class="col-md-8 text-start">
+            {{ project.due }}
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4 text-start">
+            <strong>Created At:</strong>
+        </div>
+        <div class="col-md-8 text-start">
+            {{ project.created }}
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end mt-4">
+        <button class="btn btn-success me-1" data-bs-toggle="modal" data-bs-target="#taskModal">
+            <i class="fas fa-plus"></i> Add Task
+        </button>
+        <div class="row mb-1">
+            <div class="col-md-12 text-start">
+                <select id="project-status-select" class="form-select" onchange="changeProjectStatus('{{ project.id }}')">
+                    <option value="DESIGN" {% if project.status == 'DESIGN' %}selected{% endif %}>DESIGN</option>
+                    <option value="DEV1" {% if project.status == 'DEV1' %}selected{% endif %}>DEV1</option>
+                    <option value="TEST1" {% if project.status == 'TEST1' %}selected{% endif %}>TEST1</option>
+                    <option value="DEV2" {% if project.status == 'DEV2' %}selected{% endif %}>DEV2</option>
+                    <option value="TEST2" {% if project.status == 'TEST2' %}selected{% endif %}>TEST2</option>
+                    <option value="FINAL" {% if project.status == 'FINAL' %}selected{% endif %}>FINAL</option>
+                    <option value="COMPLETE" {% if project.status == 'COMPLETE' %}selected{% endif %}>COMPLETE</option>
+                </select>
+            </div>
+        </div>
+    </div>     
+</div>
+
+<!-- Task List Section -->
+<div class="mt-4">
+    <h5>Tasks for Project: {{ project.name }}</h5>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>T-ID</th>
+                <th>Task Name</th>
+                <th>Created</th>
+                <th>Started</th>
+                <th>Updated</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="task-list" class="tasks_table_data">
+        </tbody>
+    </table>
+</div>
+<!-- Modal for viewing full description -->
+<div class="modal fade" id="viewMoreModal" tabindex="-1" aria-labelledby="viewMoreModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewMoreModalLabel">Task Description</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="fullDescription"></p> <!-- Full description will be inserted here -->
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Task Creation Modal -->
+<div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskModalLabel">Create Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="taskForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="task-name" class="form-label">Task Name</label>
+                        <input type="text" class="form-control" id="task-name" name="task-name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="task-description" class="form-label">Task Description</label>
+                        <textarea class="form-control" id="task-description" name="task-description" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="task-due" class="form-label">Due Date</label>
+                        <input type="date" class="form-control" id="task-due" name="task-due" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="create_task('{{ project.id }}')">Create Task</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Task Assignment Modal -->
+<div class="modal fade" id="assignTaskModal" tabindex="-1" aria-labelledby="assignTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignTaskModalLabel">Assign Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Search input for users -->
+                <div class="mb-3">
+                    <label for="user-search-input" class="form-label">Search Peer</label>
+                    <input type="text" class="form-control" id="user-search-input" placeholder="Type to search...">
+                </div>
+                
+                <!-- Display search results here -->
+                <ul id="user-search-results" class="list-group mb-3"></ul>
+
+                <!-- Form to submit the task assignment -->
+                <form id="assignTaskForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="task_id">
+                    <input type="hidden" name="user_id"> <!-- This gets populated when a user is selected -->
+                    <button type="submit" class="btn btn-primary" onclick="assign_task()">Assign Task</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Call the setProjectStatusBadge function on page load
+        setProjectStatusBadge("{{ project.status }}");
+        get_tasks("{{ project.id }}")
+    });
+</script>
+{% endblock %}

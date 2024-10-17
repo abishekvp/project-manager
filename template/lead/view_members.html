@@ -1,0 +1,85 @@
+{% extends 'lead/dashboard.html' %}
+{% block lead_board %}
+<style>
+    thead tr th{
+        text-align: left;
+    }
+</style>
+<div class="table-responsive">
+    <div class="d-flex justify-content-end w-100" style="background-color: gray;">
+        <a class="nav-link p-3" href="{% url 'create-peer' %}">
+            <button class="create-btn w-20 px-2 py-1 rounded ms-auto">Create Peers</button>
+        </a>
+    </div>
+</div>
+<div class="table-responsive">
+    <h2 class="px-5">Inactive Users</h2>
+    <table class="table table-striped table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>USER-ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody class="inactives_table_data">
+            <!-- Data will be populated here by JavaScript -->
+        </tbody>
+    </table>
+</div>
+<div class="table-responsive">
+    <h2 class="text-center px-5">Leads</h2>
+    <table class="table table-striped table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>USER-ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody class="leads_table_data">
+            <!-- Data will be populated here by JavaScript -->
+        </tbody>
+    </table>
+</div>
+<div class="table-responsive">
+    <h2 class="text-center px-5">Managers</h2>
+    <table class="table table-striped table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>USER-ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody class="managers_table_data">
+            <!-- Data will be populated here by JavaScript -->
+        </tbody>
+    </table>
+</div>
+<div class="table-responsive">
+    <h2 class="text-center px-5">Peers</h2>
+    <table class="table table-striped table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>USER-ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody class="peers_table_data">
+            <!-- Data will be populated here by JavaScript -->
+        </tbody>
+    </table>
+</div>
+<script>
+    window.onload = function() {
+        load_members();
+    };
+</script>
+{% endblock %}

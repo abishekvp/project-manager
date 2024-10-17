@@ -1,0 +1,26 @@
+{% extends 'peer/dashboard.html' %}
+{% block peer_board %}
+<div class="table-responsive">
+    <table class="table table-striped table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>P-ID</th>
+                <th>Name</th>
+                <th>Created</th>
+                <th>Started</th>
+                <th>Updated</th>
+                <th>Due Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody class="projects_table_data">
+            <!-- Data will be populated here by JavaScript -->
+        </tbody>
+    </table>
+</div>
+<script>
+    window.onload = function() {
+        get_peer_projects();
+    };
+</script>
+{% endblock %}

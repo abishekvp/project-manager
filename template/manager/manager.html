@@ -1,0 +1,103 @@
+{% extends 'manager/dashboard.html' %}
+{% block title %}Lead Dashboard{% endblock title %}
+{% block manager_board %}
+
+<div class="container mt-4">
+    <h1>Lead Dashboard</h1>
+    <div class="row justify-content-around">
+        <div class="col-md-3">
+            <div class="card text-black bg-light mb-3">
+                <div class="card-header">Total Projects</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ total_projects }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-black bg-light mb-3">
+                <div class="card-header">Total Tasks</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ total_tasks }}</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="card text-white bg-secondary mb-3">
+                <div class="card-header">Todo Tasks</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ todo_tasks }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Progress Tasks</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ progress_tasks }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-header">Verify Tasks</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ verify_tasks }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-brown-red mb-3">
+                <div class="card-header">Correction Tasks</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ correction_tasks }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-header">Hold Tasks</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ hold_tasks }}</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Completed Tasks</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ complete_tasks }}</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="mt-4">Project Task Statistics</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Project Name</th>
+                <th>Total Tasks</th>
+                <th>Completed Tasks</th>
+                <th>Hold Tasks</th>
+                <th>Verify Tasks</th>
+                <th>Completion %</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stat in project_stats %}
+            <tr>
+                <td>{{ stat.project.name }}</td>
+                <td>{{ stat.total_tasks }}</td>
+                <td>{{ stat.completed_tasks }}</td>
+                <td>{{ stat.hold_tasks }}</td>
+                <td>{{ stat.verify_tasks }}</td>
+                <td>{{ stat.completion_percentage }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

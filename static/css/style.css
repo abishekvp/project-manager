@@ -1,0 +1,25 @@
+/* Light Theme */
+body {
+  background-color: white;
+  color: black;
+}
+
+/* Dark Theme */
+body.dark-theme {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+thead tr th{
+  text-align: center;
+}
+/* task status */
+option {
+  background: white;
+  color: black;
+}
+
+.bg-brown-red{
+  background-color: #dc3545;
+  color: white;
+}

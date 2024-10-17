@@ -1,0 +1,26 @@
+{% extends 'lead/dashboard.html' %}
+
+{% block lead_board %}
+<div class="container mt-4">
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="project-name" class="form-label">Project Name</label>
+            <input type="text" name="project-name" id="project-name" class="form-control" placeholder="Enter project name" required>
+        </div>
+        <div class="mb-3">
+            <label for="project-description" class="form-label">Project Description</label>
+            <input type="text" name="project-description" id="project-description" class="form-control" placeholder="Enter project description" required>
+        </div>
+        <div class="mb-3">
+            <label for="project-client_name" class="form-label">Client Name</label>
+            <input type="text" name="project-client_name" id="project-client_name" class="form-control" placeholder="Enter client name" required>
+        </div>
+        <div class="mb-3">
+            <label for="project-due" class="form-label">Due Date</label>
+            <input type="date" name="project-due" id="project-due" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Create</button>
+    </form>
+</div>
+{% endblock %}

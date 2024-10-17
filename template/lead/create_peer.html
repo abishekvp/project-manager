@@ -1,0 +1,25 @@
+{% extends 'lead/dashboard.html' %}
+
+{% block lead_board %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Create Peer</h2> <!-- Title for the form -->
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" name="username" id="username" placeholder="Enter your username" required>
+            <div class="invalid-feedback">
+                Enter a username.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" name="email" id="email" placeholder="Enter your email" required>
+            <div class="invalid-feedback">
+                Please enter a valid email address.
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Create</button>
+    </form>
+</div>
+{% endblock %}

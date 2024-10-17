@@ -1,0 +1,32 @@
+{% extends 'lead/dashboard.html' %}
+{% block lead_board %}
+<div class="table-responsive">
+    <div class="d-flex justify-content-end w-100" style="background-color: gray;">
+        <a class="nav-link p-3" href="{% url 'create-project' %}">
+            <button class="create-btn w-20 px-2 py-1 rounded ms-auto">Create Project</button>
+        </a>
+    </div>
+    <table class="table table-striped table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>P-ID</th>
+                <th>Name</th>
+                <th>Created</th>
+                <th>Started</th>
+                <th>Updated</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody class="projects_table_data">
+            <!-- Data will be populated here by JavaScript -->
+        </tbody>
+    </table>
+</div>
+<script>
+    window.onload = function() {
+        get_projects();
+    };
+</script>
+{% endblock %}

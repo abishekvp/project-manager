@@ -1,0 +1,28 @@
+{% extends 'manager/dashboard.html' %}
+{% block manager_board %}
+<div class="table-responsive">
+    <table class="table table-striped table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>T-ID</th>
+                <th>Task Name</th>
+                <th>Project Name</th>
+                <th>Created</th>
+                <th>Started</th>
+                <th>Updated</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Assigned</th>
+            </tr>
+        </thead>
+        <tbody class="tasks_table_data">
+            <!-- Data will be populated here by JavaScript -->
+        </tbody>
+    </table>
+</div>
+<script>
+    window.onload = function() {
+        view_tasks();
+    };
+</script>
+{% endblock %}
