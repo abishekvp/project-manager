@@ -36,8 +36,3 @@ function open_assign_task_form(taskid) {
     $('#user-search-input').val('');
     $('#user-search-results').empty();
 }
-
-function view_more(description) {
-    $('#fullDescription').text(description);
-    $('#viewMoreModal').modal('show');
-}

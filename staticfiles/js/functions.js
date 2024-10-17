@@ -54,7 +54,6 @@ function get_projects() {
                         <td>${project.due}</td>
                         <td><span class="badge bg-${STATUS_COLOR[project.status]}">${project.status}</span></td>
                         <td>
-                            <i class="fas fa-trash-alt text-danger me-3 px-1" onclick="delete_project(${project.id})" style="cursor: pointer;" title="Delete"></i>
                             <i class="fa-solid fa-up-right-from-square text-info px-1" onclick="view_project(${project.id})" style="cursor: pointer;" title="View"></i>
                         </td>
                     </tr>
@@ -78,16 +77,6 @@ function get_tasks(id) {
 
             // Loop through the tasks and append them to the table
             response.tasks.forEach((task, index) => {
-                let truncatedDescription = task.description;
-
-                // Check if the description is longer than 50 characters
-                if (task.description.length > 50) {
-                    // Truncate the description and add the "View More" link
-                    truncatedDescription = task.description.substring(0, 50) + '...';
-                    truncatedDescription += ` <a href="#" onclick="view_more('${task.description}')" class="text-primary">View More</a>`;
-                }
-
-                // Determine whether to show the assign button or the assigned user's name with a "Remove User" icon
                 let taskActions;
                 if (task.assigned) {
                     taskActions = `
@@ -117,8 +106,7 @@ function get_tasks(id) {
                 tasksTableBody.append(
                     `<tr>
                         <td>${task.id}</td>
-                        <td>${task.name}</td>
-                        <td>${truncatedDescription}</td>
+                        <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_description('${task.description}')" style="cursor: pointer;" title="Description"></i></td>
                         <td>${task.created}</td>
                         <td>${task.started}</td>
                         <td>${task.updated}</td>
@@ -168,7 +156,7 @@ function updateTaskStatus(taskId, newStatus) {
         },
         success: function (response) {
             setTaskStatusBadge(taskId, newStatus)
-            get_tasks(localStorage.getItem('project_id'));
+            get_tasks(response.projectid);
         },
     });
 };
@@ -194,8 +182,17 @@ function view_task_description(task_description) {
 }
 
 function view_project(id) {
-    window.localStorage.setItem('project_id', id);
-    window.location.href = '/lead/view-project/' + id
+    $.ajax({
+        type: "POST",
+        url: `/view-project`,
+        data: {
+            projectid: id,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function (response) {
+            window.location.href = response.url;
+        },
+    });
 }
 
 function create_task(id) {
@@ -282,11 +279,10 @@ $('#user-search-input').on('keyup', function() {
     }
 });
 
-// Select a user from the search result
 function selectUser(userId, username) {
-    $('#assignTaskForm input[name="user_id"]').val(userId);  // Set the selected user ID
-    $('#user-search-input').val(username);  // Update the input with the selected username
-    $('#user-search-results').empty();  // Clear the search results
+    $('#assignTaskForm input[name="user_id"]').val(userId);
+    $('#user-search-input').val(username);
+    $('#user-search-results').empty();
 }
 
 function view_tasks() {
@@ -300,10 +296,7 @@ function view_tasks() {
                     $(".tasks_table_data").append(`
                         <tr>
                             <td>${task.id}</td>
-                            <td>${task.name}</td>
-                            <td class='text-center'>
-                                <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_description('${task.description}')" style="cursor: pointer;" title="Description"></i>
-                            </td>
+                            <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_description('${task.description}')" style="cursor: pointer;" title="Description"></i></td>
                             <td>${task.project}</td>
                             <td>${task.created}</td>
                             <td>${task.started}</td>
@@ -396,19 +389,19 @@ function load_members() {
 function get_peer_projects() {
     $.ajax({
         type: "GET",
-        url: "/peer/peer-projects",
+        url: "/peer/view-projects",
         success: function (response) {
             $(".projects_table_data").empty();
             response["projects"].forEach(project => {
                 $(".projects_table_data").append(`
                     <tr>
                         <td>${project.id}</td>
-                        <td>${project.name}</td>
-                        <td>${project.description}</td>
+                        <td>${project.name} <i class="fa-solid fa-up-right-from-square text-info px-1" onclick="peer_view_project(${project.id})" style="cursor: pointer;" title="View"></i></td>
+                        <td>${project.created}</td>
+                        <td>${project.started}</td>
+                        <td>${project.updated}</td>
+                        <td>${project.due}</td>
                         <td><span class="badge bg-${STATUS_COLOR[project.status]}">${project.status}</span></td>
-                        <td>
-                            <i class="fa-solid fa-up-right-from-square text-info px-1" onclick="peer_view_project(${project.id})" style="cursor: pointer;" title="View"></i>
-                        </td>
                     </tr>
                 `);
             });
@@ -442,10 +435,11 @@ function peer_view_tasks() {
                     $(".peer_tasks_table_data").append(`
                         <tr>
                             <td>${task.id}</td>
-                            <td>${task.name}</td>
+                            <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_description('${task.description}')" style="cursor: pointer;" title="Description"></i></td>
                             <td>${task.project}</td>
                             <td>${task.created}</td>
                             <td>${task.started}</td>
+                            <td>${task.updated}</td>
                             <td>${task.due}</td>
                             <td>${statusOptions}</td>
                         </tr>
@@ -467,6 +461,7 @@ function updatePeerTaskStatus(taskId, newStatus) {
         },
         success: function (response) {
             setTaskStatusBadge(taskId, newStatus)
+            peer_view_tasks();
         },
     });
 };
