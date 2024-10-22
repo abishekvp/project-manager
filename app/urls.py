@@ -17,4 +17,5 @@ urlpatterns = [
     path('view-project', views.view_project, name='view-project'),
     path('get-task-list', views.get_task_list, name='get-task-list'),
     path('task-detail/', views.task_detail, name='task-detail'),
+    path('sort-tasks-by-status/<str:status>/', views.sort_tasks_by_status, name='sort-tasks-by-status'),
 ]

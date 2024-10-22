@@ -220,3 +220,37 @@ def task_detail(request):
     task = utility.as_dict(task)
     task['assigned'] = assigned
     return JsonResponse({"task": task})
+
+def sort_tasks_by_status(request, status):
+    status = str(status).upper()
+    if status == const.TASK_TODO:
+        status = const.TASK_TODO
+    elif status == const.TASK_PROGRESS:
+        status = const.TASK_PROGRESS
+    elif status == const.TASK_VERIFY:
+        status = const.TASK_VERIFY
+    elif status == const.TASK_CORRECTION:
+        status = const.TASK_CORRECTION
+    elif status == const.TASK_HOLD:
+        status = const.TASK_HOLD
+    elif status == const.TASK_COMPLETE:
+        status = const.TASK_COMPLETE
+
+    if status == const.TASK_ALL:
+        tasks = Task.objects.all()
+    else:
+        tasks = Task.objects.filter(status=status)
+    if not tasks:
+        return JsonResponse({"tasks": [], "status": 400})
+    tasks_dict = []
+    for task in tasks:
+        if task.assigned_to:
+            assigned_user = task.assigned_to.username
+        else:
+            assigned_user = None
+        project_name = task.project.name
+        task = utility.as_dict(task)
+        task['assigned'] = assigned_user
+        task['project'] = project_name
+        tasks_dict.append(task)
+    return JsonResponse({"tasks": tasks_dict, "status": status})

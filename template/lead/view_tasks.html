@@ -2,10 +2,16 @@
 {% block lead_board %}
 <div class="table-responsive">
     <div class="d-flex justify-content-end w-100 mb-3 bg-secondary"> <!-- Bootstrap gray background -->
-        <a class="nav-link p-3" href="{% url 'create-project' %}">
-            <select class="btn btn-light create-btn px-3 py-2 rounded">
-                <option value="TODO"TODO></option>
-            </select> <!-- Light button for contrast -->
+        <a class="nav-link p-3">
+            <select onchange="sortTaskByStatus(this.value)" class="form-select task-status">
+                <option value="ALL">ALL</option>
+                <option value="TODO">TODO</option>
+                <option value="IN-PROGRESS">IN PROGRESS</option>
+                <option value="VERIFY">VERIFY</option>
+                <option value="CORRECTION">CORRECTION</option>
+                <option value="HOLD">HOLD</option>
+                <option value="COMPLETE">COMPLETE</option>
+            </select>
         </a>
     </div>
     <table class="table table-striped table-bordered table-dark"> <!-- Added table-dark class -->

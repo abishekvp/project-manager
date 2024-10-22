@@ -123,6 +123,33 @@ function get_tasks(id) {
     });
 }
 
+function sortTaskByStatus(status){
+    $.ajax({
+        type: "GET",
+        url: `/sort-tasks-by-status/${status}`,
+        success: function (response) {
+            $(".tasks_table_data").empty();
+            response["tasks"].forEach((task, index) => {
+                setTimeout(function () {
+                    $(".tasks_table_data").append(`
+                        <tr>
+                            <td>${task.id}</td>
+                            <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_description('${task.description}')" style="cursor: pointer;" title="Description"></i></td>
+                            <td>${task.project}</td>
+                            <td>${task.created}</td>
+                            <td>${task.started}</td>
+                            <td>${task.updated}</td>
+                            <td>${task.due}</td>
+                            <td><span class="px-2 py-1 rounded" style="${TASK_STATUS_COLORS[task.status]}">${task.status}</span></td>
+                            <td>${task.assigned}</td>
+                        </tr>
+                    `);
+                }, index * 50);
+            });
+        },
+    });
+}
+
 // Function to remove the assigned user
 function remove_assigned_peer(taskId) {
     var remove = confirm("Are you sure you want to remove the assigned user?");
