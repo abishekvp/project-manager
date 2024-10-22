@@ -1,25 +1,29 @@
-/* Light Theme */
 body {
-  background-color: white;
-  color: black;
+  background-color: #343a40;
 }
 
-/* Dark Theme */
-body.dark-theme {
-  background-color: #121212;
-  color: #e0e0e0;
+.nav-link {
+  transition: background-color 0.3s;
+  padding: 0;
+  margin: 10px;
 }
 
-thead tr th{
-  text-align: center;
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
-/* task status */
+
+.nav-link.active {
+  background-color: #007bff;
+  color: white;
+}
+
 option {
   background: white;
   color: black;
 }
 
 .bg-brown-red{
-  background-color: #dc3545;
+  background-color: red;
   color: white;
 }
+

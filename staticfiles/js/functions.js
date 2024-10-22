@@ -70,7 +70,7 @@ function get_tasks(id) {
     const projectId = id; // Get the project ID from your template
     $.ajax({
         type: "GET",
-        url: `/get-tasks/${projectId}`, // Assuming your backend supports this URL pattern
+        url: `/get-task-list`, // Assuming your backend supports this URL pattern
         success: function (response) {
             const tasksTableBody = $(".tasks_table_data"); // Assuming you have a table body with this class
             tasksTableBody.empty(); // Clear any existing tasks
@@ -106,7 +106,7 @@ function get_tasks(id) {
                 tasksTableBody.append(
                     `<tr>
                         <td>${task.id}</td>
-                        <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_description('${task.description}')" style="cursor: pointer;" title="Description"></i></td>
+                        <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_details('${task.id}')" style="cursor: pointer;" title="Description"></i></td>
                         <td>${task.created}</td>
                         <td>${task.started}</td>
                         <td>${task.updated}</td>
@@ -120,6 +120,33 @@ function get_tasks(id) {
         error: function (error) {
             console.error("Error fetching tasks:", error);
         }
+    });
+}
+
+function sortTaskByStatus(status){
+    $.ajax({
+        type: "GET",
+        url: `/sort-tasks-by-status/${status}`,
+        success: function (response) {
+            $(".tasks_table_data").empty();
+            response["tasks"].forEach((task, index) => {
+                setTimeout(function () {
+                    $(".tasks_table_data").append(`
+                        <tr>
+                            <td>${task.id}</td>
+                            <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_description('${task.description}')" style="cursor: pointer;" title="Description"></i></td>
+                            <td>${task.project}</td>
+                            <td>${task.created}</td>
+                            <td>${task.started}</td>
+                            <td>${task.updated}</td>
+                            <td>${task.due}</td>
+                            <td><span class="px-2 py-1 rounded" style="${TASK_STATUS_COLORS[task.status]}">${task.status}</span></td>
+                            <td>${task.assigned}</td>
+                        </tr>
+                    `);
+                }, index * 50);
+            });
+        },
     });
 }
 
@@ -175,10 +202,27 @@ function delete_task(pid, tid) {
     };
 }
 
-function view_task_description(task_description) {
-    var myModal = new bootstrap.Modal(document.getElementById('detailTaskModal'));
-    myModal.show();
-    document.getElementById('detailTaskModalDescription').innerHTML = task_description;
+function convertUrlsToLinks(text) {
+    const urlPattern = /(https?:\/\/[^\s]+)/g;
+    return text
+        .replace(urlPattern, '<a href="$1" target="_blank">$1</a>')
+        .replace(/\n/g, '<br>');
+}
+
+function view_task_details(taskid) {
+    $.ajax({
+        type: "GET",
+        url: `/task-detail/`,
+        data: { taskid: taskid },
+        success: function (response) {
+            var myModal = new bootstrap.Modal(document.getElementById('detailTaskModal'));
+            myModal.show();
+            document.getElementById('detailTaskModalDescription').innerHTML = convertUrlsToLinks(response.task.description);
+        },
+        error: function (error) {
+            console.error("Error searching users:", error);
+        }
+    });
 }
 
 function view_project(id) {
@@ -195,6 +239,38 @@ function view_project(id) {
     });
 }
 
+$('#user-search-input').on('keyup', function() {
+    const query = $(this).val();
+    if (query.length > 2) {  // Trigger search when input has more than 2 characters
+        $.ajax({
+            type: "GET",
+            url: `/search-users/`,
+            data: { query: query },
+            success: function (response) {
+                const searchResults = $('#user-search-results');
+                searchResults.empty();  // Clear previous search results
+
+                response.users.forEach(user => {
+                    searchResults.append(
+                        `<li class="list-group-item" onclick="selectUser(${user.id}, '${user.username}')">
+                            ${user.username}
+                        </li>`
+                    );
+                });
+            },
+            error: function (error) {
+                console.error("Error searching users:", error);
+            }
+        });
+    }
+});
+
+function selectUser(userId, username) {
+    $('#assignTaskForm input[name="user_id"]').val(userId);
+    $('#user-search-input').val(username);
+    $('#user-search-results').empty();
+}
+
 function create_task(id) {
     const form = document.getElementById('taskForm');
     
@@ -203,7 +279,7 @@ function create_task(id) {
     formData.append('project_id', id); // Append the project ID if needed
 
     // Submit the form data via AJAX
-    fetch('/lead/create-task', {
+    fetch('/manager/create-task', {
         method: 'POST',
         body: formData,
     })
@@ -239,12 +315,12 @@ function assign_task() {
     const formData = new FormData(form);
     $.ajax({
         type: "POST",
-        url: "/lead/assign-task",
+        url: "/assign-task",
         data: formData,
         processData: false,
         contentType: false,
         success: function (response) {
-            get_tasks(response.project_id); // Refresh the tasks list after assignment
+            get_tasks(response.project_id);
             $('#assignTaskModal').modal('hide');
         },
         error: function (error) {
@@ -254,11 +330,11 @@ function assign_task() {
 }
 
 function assign_project() {
-    const form = document.getElementById('assignProjectModal');
+    const form = document.getElementById('assignProjectForm');
     const formData = new FormData(form);
     $.ajax({
         type: "POST",
-        url: "/lead/assign-task",
+        url: "/lead/assign-project",
         data: formData,
         processData: false,
         contentType: false,
@@ -272,20 +348,37 @@ function assign_project() {
     });
 }
 
+function remove_project_manager(projectid){
+    const confirmation = confirm("Are you sure you want to remove the project manager?");
+    if (confirmation) {
+        $.ajax({
+            type: "POST",
+            url: `/lead/remove-project-manager`,
+            data: {
+                projectid: projectid,
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            },
+            success: function (response) {
+                location.reload();
+            },
+        });
+    }
+}
+
 $('#manager-search-input').on('keyup', function() {
     const query = $(this).val();
     if (query.length > 2) {  // Trigger search when input has more than 2 characters
         $.ajax({
             type: "GET",
-            url: `/search-manager/`,
+            url: `/lead/search-manager/`,
             data: { query: query },
             success: function (response) {
-                const searchResults = $('#user-search-results');
+                const searchResults = $('#manager-search-results');
                 searchResults.empty();
-                response.users.forEach(user => {
+                response.managers.forEach(manager => {
                     searchResults.append(
-                        `<li class="list-group-item" onclick="selectManager(${user.id}, '${user.username}')">
-                            ${user.username}
+                        `<li class="list-group-item" onclick="selectManager(${manager.id}, '${manager.username}')">
+                            ${manager.username}
                         </li>`
                     );
                 });
@@ -303,42 +396,10 @@ function selectManager(managerid, username) {
     $('#manager-search-results').empty();
 }
 
-$('#user-search-input').on('keyup', function() {
-    const query = $(this).val();
-    if (query.length > 2) {  // Trigger search when input has more than 2 characters
-        $.ajax({
-            type: "GET",
-            url: `/search-users/`,
-            data: { query: query },
-            success: function (response) {
-                const searchResults = $('#user-search-results');
-                searchResults.empty();  // Clear previous search results
-
-                response.users.forEach(user => {
-                    searchResults.append(
-                        `<li class="list-group-item" onclick="selectUser(${user.id}, '${user.username}')">
-                            ${user.username}
-                        </li>`
-                    );
-                });
-            },
-            error: function (error) {
-                console.error("Error searching users:", error);
-            }
-        });
-    }
-});
-
-function selectUser(userId, username) {
-    $('#assignTaskForm input[name="user_id"]').val(userId);
-    $('#user-search-input').val(username);
-    $('#user-search-results').empty();
-}
-
 function view_tasks() {
     $.ajax({
         type: "GET",
-        url: "/lead/view-tasks",
+        url: "/get-task-list",
         success: function (response) {
             $(".tasks_table_data").empty();
             response["tasks"].forEach((task, index) => {
@@ -590,22 +651,5 @@ function approve_user(id) {
         success: function (response) {
             load_members()
         },
-    });
-}
-
-function assign_project_manager(projectid) {
-    const form = document.getElementById('assignLeadForm');
-    const formData = new FormData(form);
-    $.ajax({
-        type: "POST",
-        url: "/lead/assign-project-manager",
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function (response) {
-        },
-        error: function (error) {
-            console.error("Error assigning project lead:", error);
-        }
     });
 }
