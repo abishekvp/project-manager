@@ -36,3 +36,10 @@ function open_assign_task_form(taskid) {
     $('#user-search-input').val('');
     $('#user-search-results').empty();
 }
+
+function open_assign_project_form(projectid) {
+    $('#assignProjectModal').modal('show');
+    $('#assignProjectForm input[name="project_id"]').val(projectid);
+    $('#manager-search-input').val('');
+    $('#manager-search-results').empty();
+}

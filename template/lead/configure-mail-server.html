@@ -3,36 +3,35 @@
 {% block dashboard %}
 <section class="container mt-5">
     <div class="row">
-        <!-- Mail Server Configuration Form -->
         <div class="col-md-6 offset-md-3">
-            <div class="card">
+            <div class="card bg-dark text-white">
                 <div class="card-body">
                     <h4 class="card-title text-center">Configure Mail Server</h4>
                     <form method="POST" id="mail-server-form" action="{% url 'configure-mail-server' %}">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="smtp_server" class="form-label">SMTP Server</label>
-                            <input type="text" class="form-control" id="smtp_server" name="smtp_server" value="{{ mail_settings.smtp_server|default:'smtp.gmail.com' }}" required>
+                            <input type="text" class="form-control bg-secondary text-white" id="smtp_server" name="smtp_server" value="{{ mail_settings.smtp_server|default:'smtp.gmail.com' }}" required>
                         </div>
                         <div class="mb-3">
                             <label for="smtp_port" class="form-label">SMTP Port</label>
-                            <input type="number" class="form-control" id="smtp_port" name="smtp_port" value="{{ mail_settings.smtp_port|default:'587' }}" required>
+                            <input type="number" class="form-control bg-secondary text-white" id="smtp_port" name="smtp_port" value="{{ mail_settings.smtp_port|default:'587' }}" required>
                         </div>
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" value="{{ mail_settings.username|default:'' }}" required>
+                            <input type="text" class="form-control bg-secondary text-white" id="username" name="username" value="{{ mail_settings.username|default:'' }}" required>
                         </div>
                         <div class="mb-3">
-                            <label for="from_mail" class="form-label">From Mail</label>
-                            <input type="mail" class="form-control" id="from_mail" name="from_mail" value="{{ mail_settings.from_mail|default:'' }}" required>
+                            <label for="from_mail" class="form-label">Copy Mail</label>
+                            <input type="email" class="form-control bg-secondary text-white" id="from_mail" name="from_mail" value="{{ mail_settings.from_mail|default:'' }}" required>
                         </div>
                         <div class="mb-3">
-                            <label for="from_mail" class="form-label">Test to Mail</label>
-                            <input type="mail" class="form-control" id="to_mail" name="to_mail" value="{{ mail_settings.to_mail|default:'' }}">
+                            <label for="to_mail" class="form-label">Test to Mail</label>
+                            <input type="email" class="form-control bg-secondary text-white" id="to_mail" name="to_mail" value="{{ mail_settings.to_mail|default:'' }}">
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" value="" required>
+                            <input type="password" class="form-control bg-secondary text-white" id="password" name="password" value="" required>
                         </div>
                         <button type="submit" class="btn btn-primary">Save Configurations</button>
                         <button type="button" class="btn btn-success" onclick="test_mail_server()">Send Test Mail</button>

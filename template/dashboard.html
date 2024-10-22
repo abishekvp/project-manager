@@ -3,7 +3,7 @@
 {% block body %}
 <section class="container-fluid">
     <!-- Fixed Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">BLISS-INFOTECH</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
@@ -23,65 +23,69 @@
         </div>
     </nav>
 
-    <!-- Sidebar and Main content -->
     <div class="row flex-nowrap">
-        
-        <!-- Fixed Sidebar -->
-        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar" style="position: fixed; top: 75px; left: 0; height: calc(100vh - 75px); overflow-y: auto;">
+        <nav class="col-md-3 col-lg-2 d-md-block sidebar bg-dark" style="position: fixed; top: 75px; left: 0; height: calc(100vh - 75px); overflow-y: auto;">
             <div class="position-sticky" id="navbarNav">
                 <ul class="nav flex-column">
                     {% if request.session.user_role == 'lead' %}
-                    <a class="nav-link" href="/lead/">
-                        <li class="nav-item"><button class="create-btn w-100">Dashboard</button></li>
-                    </a>
-                    <a class="nav-link" href="{% url 'list-projects' %}">
-                        <li class="nav-item"><button class="create-btn w-100">Projects</button></li>
-                    </a>
-                    <a class="nav-link" href="{% url 'view-tasks' %}">
-                        <li class="nav-item"><button class="create-btn w-100">Tasks</button></li>
-                    </a>
-                    <a class="nav-link" href="{% url 'mail-server' %}">
-                        <li class="nav-item"><button class="create-btn w-100">Mail Server</button></li>
-                    </a>
-                    <a class="nav-link" href="{% url 'view-members' %}">
-                        <li class="nav-item"><button class="create-btn w-100">Members</button></li>
-                    </a>
-                    <a class="nav-link" href="{% url 'profile' %}">
-                        <li class="nav-item"><button class="create-btn w-100">Profile</button></li>
-                    </a>
-                    {% elif request.session.user_role == 'manager' %}
-                    <a class="nav-link" href="/manager/">
-                        <li class="nav-item"><button class="create-btn w-100">Dashboard</button></li>
-                    </a>
-                    <a class="nav-link" href="{% url 'manager-list-projects' %}">
-                        <li class="nav-item"><button class="create-btn w-100">Projects</button></li>
-                    </a>
-                    <a class="nav-link" href="{% url 'manager-view-tasks' %}">
-                        <li class="nav-item"><button class="create-btn w-100">Tasks</button></li>
-                    </a>
-                    <a class="nav-link" href="{% url 'profile' %}">
-                        <li class="nav-item"><button class="create-btn w-100">Profile</button></li>
-                    </a>
-                    {% elif request.session.user_role == 'peer' %}
-                    <a class="nav-link" href="/peer/">
-                        <li class="nav-item"><button class="create-btn w-100">Dashboard</button></li>
-                    </a>
-                    <a class="nav-link" href="{% url 'view-peer-projects' %}">
-                        <li class="nav-item"><button class="create-btn w-100">Projects</button></li>
-                    </a>
-                    <a class="nav-link" href="{% url 'peer-tasks' %}">
-                        <li class="nav-item"><button class="create-btn w-100">Tasks</button></li>
-                    </a>
-                    <a class="nav-link" href="{% url 'profile' %}">
-                        <li class="nav-item"><button class="create-btn w-100">Profile</button></li>
+                    {% if request.is_staff == true %}
+                    <a class="nav-link {% if request.path == '/lead/admin-dashboard' %}active{% endif %}" href="{% url 'admin-dashboard' %}">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Admin Dashboard</button></li>
                     </a>
                     {% endif %}
-                </ul>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/lead/' %}active{% endif %}" href="/lead/">
+                            <button class="create-btn w-100 btn btn-outline-light">Dashboard</button>
+                        </a>
+                    </li>
+                    <a class="nav-link {% if request.path == '/lead/view-projects' %}active{% endif %}" href="{% url 'view-projects' %}">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Projects</button></li>
+                    </a>
+                    <a class="nav-link {% if request.path == '/lead/view-tasks' %}active{% endif %}" href="{% url 'view-tasks' %}">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Tasks</button></li>
+                    </a>
+                    <a class="nav-link {% if request.path == '/lead/mail-server' %}active{% endif %}" href="{% url 'mail-server' %}">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Mail Server</button></li>
+                    </a>
+                    <a class="nav-link {% if request.path == '/lead/view-members' %}active{% endif %}" href="{% url 'view-members' %}">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Members</button></li>
+                    </a>
+                    <a class="nav-link {% if request.path == '/profile' %}active{% endif %}" href="{% url 'profile' %}">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Profile</button></li>
+                    </a>
+                    {% elif request.session.user_role == 'manager' %}
+                    <a class="nav-link {% if request.path == '/manager/' %}active{% endif %}" href="/manager/">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Dashboard</button></li>
+                    </a>
+                    <a class="nav-link {% if request.path == 'manager-list-projects' %}active{% endif %}" href="{% url 'manager-list-projects' %}">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Projects</button></li>
+                    </a>
+                    <a class="nav-link {% if request.path == 'manager-view-tasks' %}active{% endif %}" href="{% url 'manager-view-tasks' %}">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Tasks</button></li>
+                    </a>
+                    <a class="nav-link {% if request.path == 'profile' %}active{% endif %}" href="{% url 'profile' %}">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Profile</button></li>
+                    </a>
+                    {% elif request.session.user_role == 'peer' %}
+                    <a class="nav-link {% if request.path == '/peer/' %}active{% endif %}" href="/peer/">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Dashboard</button></li>
+                    </a>
+                    <a class="nav-link {% if request.path == '/peer/view-projects' %}active{% endif %}" href="{% url 'view-peer-projects' %}">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Projects</button></li>
+                    </a>
+                    <a class="nav-link {% if request.path == '/peer/peer-tasks' %}active{% endif %}" href="{% url 'peer-tasks' %}">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Tasks</button></li>
+                    </a>
+                    <a class="nav-link {% if request.path == '/profile' %}active{% endif %}" href="{% url 'profile' %}">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Profile</button></li>
+                    </a>
+                    {% endif %}
+                </ul>                
             </div>
         </nav>
 
         <!-- Main content area (Scrollable) -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" style="overflow-y: auto; margin-left: 17%; padding-top: 75px; height: calc(100vh - 20px); overflow-y: auto;">
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" style="overflow-y: auto; margin-left: 17%; padding-top: 75px; height: calc(100vh - 20px);">
             {% block dashboard %}
             <!-- Default content can go here -->
             {% endblock %}

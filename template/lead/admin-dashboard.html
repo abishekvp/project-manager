@@ -1,0 +1,7 @@
+{% extends 'dashboard.html' %}
+{% block title %}Mail Server{% endblock title %}
+{% block dashboard %}
+<section class="container mt-1 ml-1">
+    <iframe class="admin-iframe" width="110%" height="820px" src="{% url 'admin:index' %}"></iframe>
+</section>
+{% endblock %}

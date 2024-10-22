@@ -1,6 +1,9 @@
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from django.http import JsonResponse
+from app.decorators import login_required
+from constants import constants as const
 
 class MailServer:
     server = None
@@ -30,8 +33,7 @@ class MailServer:
     def send_mail(cls, to_mail, subject, message):
         try:
             if cls.server is None:
-                return {'status': 500, 'message': 'Server not logged in. Please login first.'}
-
+                return {'status': 500, 'message': 'Server not configured.'}
             msg = MIMEMultipart()
             msg['From'] = cls.from_email
             msg['To'] = to_mail
@@ -47,3 +49,10 @@ class MailServer:
         if cls.server:
             cls.server.quit()
             cls.server = None
+
+def send_project_assigned_mail(project, manager):
+    manager_name = manager.first_name or manager.username
+    context = const.project_assigned_mail_context(project, manager_name)
+    mailserver = MailServer()
+    result = mailserver.send_mail(to_mail=manager.email, subject=context['subject'], message=context['message'])
+    return JsonResponse({'status': 200})

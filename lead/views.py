@@ -1,32 +1,28 @@
+from app.decorators import group_required
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
-from app import models as app_models, views as app_views
 from django.contrib import messages
 from django.http import JsonResponse
 from constants import constants as const
 from utils import utility as util
-from app.mail_server import MailServer
-from app.views import get_role
+from app import mail_server
+from app import views as app_views
+from app import models as app_models
 
-@login_required(login_url='/signin')
+@group_required(const.LEAD)
 def dashboard(request):
     if request.user.is_authenticated:
-        request.session['user_role'] = get_role(request)
+        request.session['user_role'] = app_views.get_role(request)
         return render(request,'lead/lead.html', lead_dashboard(request))
     else: return redirect('signin')
 
-def create_peer(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        email = request.POST['email']
-        user = User.objects.create_user(username=username, email=email, password=username)
-        group = Group.objects.all().filter(name=const.PEER).first()
-        user.groups.add(group)
-        return redirect('view-peers')
-    return render(request, 'lead/create_peer.html')
+def admin_dashboard(request):
+    if request.user.is_authenticated and request.session['user_role'] == const.LEAD and request.user.is_staff and request.user.username == 'abi':
+        return render(request, 'lead/admin-dashboard.html')
+    else:
+        return redirect('/signout')
 
+@group_required(const.LEAD)
 def create_project(request):
     if request.method == 'POST':
         project_name = request.POST['project-name']
@@ -34,13 +30,35 @@ def create_project(request):
         project_client_name = request.POST['project-client_name']
         project_due = request.POST['project-due']
         app_models.Project.objects.create(name=project_name, description=project_description, client_name=project_client_name, due=project_due)
-        return redirect('list-projects')
+        return redirect('view-projects')
     return render(request, 'lead/create_project.html')
 
+@group_required(const.LEAD)
+def assign_project_manager(request):
+    if request.method == 'POST':
+        project_id = request.POST.get('project_id')
+        manager_id = request.POST.get('manager_id')
+        project = app_models.Project.objects.get(id=project_id)
+        project.manager = User.objects.get(id=manager_id)
+        project.save()
+        result = mail_server.send_project_assigned_mail(project, project.manager)
+        return JsonResponse({'project_id': project_id})
+
+@group_required(const.LEAD)
+def remove_project_manager(request):
+    if request.method == 'POST':
+        project_id = request.POST.get('projectid')
+        project = app_models.Project.objects.get(id=project_id)
+        project.manager = None
+        project.save()
+        return JsonResponse({'project_id': project_id})
+
+@group_required(const.LEAD)
 def delete_project(request, projectid):
     app_models.Project.objects.filter(id=projectid).delete()
-    return redirect('list-projects')
+    return redirect('view-projects')
 
+@group_required(const.LEAD)
 def create_task(request):
     import datetime
     if request.method == 'POST':
@@ -63,14 +81,22 @@ def create_task(request):
         return JsonResponse({'status': 200})
     return render(request, 'lead/create_task.html')
 
-def list_projects(request):
+@group_required(const.LEAD)
+def view_projects(request):
     return render(request, 'lead/list_projects.html')
 
+@group_required(const.LEAD)
 def view_project(request, projectid):
-    project = app_models.Project.objects.filter(id=projectid).first()
+    project = app_models.Project.objects.get(id=projectid)
+    manager = project.manager
     project = util.as_dict(project)
+    if manager:
+        project['manager'] = manager.username
+    else:
+        project['manager'] = None
     return render(request, 'lead/view_project.html', {"project": project})
 
+@group_required(const.LEAD)
 def change_project_status(request, projectid):
     if request.method == 'POST':
         status = request.POST.get('status')
@@ -92,10 +118,12 @@ def change_project_status(request, projectid):
             return JsonResponse({"error": "Project not found."}, status=404)
     return JsonResponse({"error": "Invalid request."}, status=400)
 
+@group_required(const.LEAD)
 def delete_task(request, projectid, taskid):
     app_models.Task.objects.filter(id=taskid).delete()
     return redirect(f'/lead/view-project/{projectid}/')
 
+@group_required(const.LEAD)
 def remove_assigned_peer(request):
     if request.method == 'POST':
         task_id = request.POST.get('taskid')
@@ -105,6 +133,7 @@ def remove_assigned_peer(request):
         project_id = request.session.get('project_id')
         return JsonResponse({'project_id': project_id})
 
+@group_required(const.LEAD)
 def view_tasks(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         tasks = app_models.Task.objects.all()
@@ -119,6 +148,7 @@ def view_tasks(request):
         return JsonResponse({'tasks': tasks_dict})
     return render(request, 'lead/view_tasks.html')
 
+@group_required(const.LEAD)
 def view_members(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         peers = User.objects.filter(groups__name=const.PEER, is_active=True)
@@ -148,6 +178,7 @@ def view_members(request):
         return JsonResponse({'inactives': inactives_dict, 'leads': leads_dict, 'managers': managers_dict, 'peers': peers_dict})
     return render(request, 'lead/view_members.html')
 
+@group_required(const.LEAD)
 def lead_dashboard(request):
     context = {}
     projects = app_models.Project.objects.all()
@@ -194,12 +225,14 @@ def lead_dashboard(request):
     context['total_tasks'] = total_tasks
     return context
 
-def mail_server(request):
+@group_required(const.LEAD)
+def view_mail_server(request):
     mail_settings = app_models.MailServer.objects.first()
     if mail_settings:
         mail_settings = util.as_dict(mail_settings)
     return render(request, 'lead/mail-server.html', {'mail_settings': mail_settings})
 
+@group_required(const.LEAD)
 def configure_mail_server(request):
     if request.method == 'POST':
         smtp_server = request.POST['smtp_server']
@@ -216,7 +249,7 @@ def configure_mail_server(request):
         mail_setting.password = password
         mail_setting.from_email = from_mail
         mail_setting.save()
-        mailserver = MailServer()
+        mailserver = mail_server.MailServer()
         mailserver.login_server(server=smtp_server, port=smtp_port, username=username, password=password, from_email=from_mail)
         messages.success(request, 'Mail server configured successfully.')
         return redirect('mail-server')
@@ -225,6 +258,7 @@ def configure_mail_server(request):
         mail_settings = util.as_dict(mail_settings)
     return render(request, 'lead/configure-mail-server.html', {'mail_settings': mail_settings})
 
+@group_required(const.LEAD)
 def test_mail_server(request):
     server = request.POST.get('smtp_server')
     port = request.POST.get('smtp_port')
@@ -232,7 +266,7 @@ def test_mail_server(request):
     password = request.POST.get('password')
     from_email = request.POST.get('from_mail')
     to_mail = request.POST.get('to_mail')
-    mailserver = MailServer()
+    mailserver = mail_server.MailServer()
     response = mailserver.login_server(server=server, port=port, username=username, password=password, from_email=from_email)
     context = const.test_mail_context()
     mail = mailserver.send_mail(to_mail=to_mail, subject=context['subject'], message=context['message'])
@@ -241,6 +275,7 @@ def test_mail_server(request):
     else:
         return JsonResponse({'status': 500, 'message': 'Failed to configure mail server.'})
     
+@group_required(const.LEAD)
 def delete_user(request):
     user_id = request.POST.get('userid')
     lead = User.objects.filter(id=request.user.id).first()
@@ -248,6 +283,7 @@ def delete_user(request):
         User.objects.filter(id=user_id).delete()
     return JsonResponse({'status': 200})
 
+@group_required(const.LEAD)
 def inactive_user(request):
     user_id = request.POST.get('userid')
     user = User.objects.filter(id=user_id).first()
@@ -256,10 +292,19 @@ def inactive_user(request):
         user.save()
     return JsonResponse({'status': 200})
 
+@group_required(const.LEAD)
 def approve_user(request):
     user_id = request.POST.get('userid')
     user = User.objects.filter(id=user_id).first()
     if user:
         user.is_active = True
+        user.is_staff = True
         user.save()
     return JsonResponse({'status': 200})
+
+@group_required(const.LEAD)
+def search_manager(request):
+    query = request.GET.get('query', '')
+    managers = User.objects.filter(username__icontains=query, groups__name=const.MANAGER, is_active=True)[:5]
+    managers_list = [{'id': user.id, 'username': user.username} for user in managers]
+    return JsonResponse({'managers': managers_list})

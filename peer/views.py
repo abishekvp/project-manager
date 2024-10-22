@@ -1,16 +1,19 @@
+from app.decorators import group_required
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from app.models import Project, Task
 from utils import utility as util
 from django.http import JsonResponse
 from constants import constants as const
+
+@group_required(const.LEAD, const.PEER)
 def dashboard(request):
     if request.user.is_authenticated:
         return render(request,'peer/peer.html', peer_dashboard(request))
     else: return redirect('signin')
 
+@group_required(const.LEAD, const.PEER)
 def peer_projects(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         tasks = Task.objects.filter(assigned_to=request.user)
@@ -21,6 +24,7 @@ def peer_projects(request):
         return JsonResponse({'projects': projects_dict})
     return render(request, 'peer/list_projects.html')
 
+@group_required(const.LEAD, const.PEER)
 def peer_tasks(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         tasks = Task.objects.filter(assigned_to=request.user)
@@ -33,12 +37,14 @@ def peer_tasks(request):
         return JsonResponse({'tasks': task_dict})
     return render(request, 'peer/view_tasks.html')
 
+@group_required(const.LEAD, const.PEER)
 def view_project(request, projectid):
     project = Project.objects.filter(id=projectid).first()
     request.session['project_id'] = projectid
     project = util.as_dict(project)
     return render(request, 'peer/peer_project.html', {"project": project})
 
+@group_required(const.LEAD, const.PEER)
 def peer_dashboard(request):
     user = request.user  # Get the currently logged-in user
     context = {}

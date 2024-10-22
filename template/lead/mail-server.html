@@ -4,22 +4,22 @@
 <section class="container mt-5">
     <div class="row">
         <div class="col-md-6 offset-md-3">
-            <div class="card">
+            <div class="card bg-dark text-white">
                 <div class="card-body">
                     <h4 class="card-title text-center">Mail Server</h4>
                     <div class="mb-3">
                         <label for="smtp_server" class="form-label">SMTP Server</label>
-                        <p class="form-control">{{ mail_settings.server }}</p>
+                        <p class="form-control bg-secondary text-white">{{ mail_settings.server }}</p>
                     </div>
                     <div class="mb-3">
                         <label for="smtp_port" class="form-label">SMTP Port</label>
-                        <p class="form-control">{{ mail_settings.port }}</p>
+                        <p class="form-control bg-secondary text-white">{{ mail_settings.port }}</p>
                     </div>
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
-                        <p class="form-control">{{ mail_settings.username }}</p>
+                        <p class="form-control bg-secondary text-white">{{ mail_settings.username }}</p>
                     </div>
-                    <a href="{% url 'configure-mail-server' %}" class="btn btn-primary">Edit Configuration</a>
+                    <a href="{% url 'configure-mail-server' %}" class="btn btn-outline-light">Edit Configuration</a>
                 </div>
             </div>
         </div>

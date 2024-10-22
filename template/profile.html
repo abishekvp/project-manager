@@ -4,26 +4,31 @@
 <section class="container mt-5">
     <div class="row">
         <div class="col-md-6 offset-md-3">
-            <div class="card">
+            <div class="card bg-dark text-white"> <!-- Use bg-dark for dark background -->
                 <div class="card-body">
                     <h4 class="card-title text-center">Profile</h4>
+                    
                     <div class="mb-3">
-                        <label for="smtp_server" class="form-label">Username</label>
-                        <p class="form-control">{{ user.username }}</p>
+                        <label for="username" class="form-label">Username</label>
+                        <p class="form-control bg-secondary text-white">{{ user.username }}</p> <!-- Dark input field -->
                     </div>
+                    
                     <div class="mb-3">
-                        <label for="smtp_port" class="form-label">Email</label>
-                        <p class="form-control">{{ user.email }}</p>
+                        <label for="email" class="form-label">Email</label>
+                        <p class="form-control bg-secondary text-white">{{ user.email }}</p>
                     </div>
+                    
                     <div class="mb-3">
-                        <label for="username" class="form-label">First Name</label>
-                        <p class="form-control">{{ user.first_name }}</p>
+                        <label for="first_name" class="form-label">First Name</label>
+                        <p class="form-control bg-secondary text-white">{{ user.first_name }}</p>
                     </div>
+                    
                     <div class="mb-3">
-                        <label for="username" class="form-label">Last Name</label>
-                        <p class="form-control">{{ user.last_name }}</p>
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <p class="form-control bg-secondary text-white">{{ user.last_name }}</p>
                     </div>
-                    <a href="{% url 'edit-profile' %}" class="btn btn-primary">Edit Profile</a>
+                    
+                    <a href="{% url 'edit-profile' %}" class="btn btn-outline-primary">Edit Profile</a> <!-- Changed to outline-light -->
                 </div>
             </div>
         </div>

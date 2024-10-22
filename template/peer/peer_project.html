@@ -41,9 +41,9 @@
 
 <!-- Task List Section -->
 <div class="mt-4">
-    <h5>Tasks for Project: {{ project.name }}</h5>
-    <table class="table table-bordered">
-        <thead>
+    <h5 class="text-white">Tasks for Project: {{ project.name }}</h5>
+    <table class="table table-striped table-bordered table-dark"> <!-- Added table-dark class -->
+        <thead class="table-light">
             <tr>
                 <th>T-ID</th>
                 <th>Task Name</th>
@@ -107,7 +107,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         // Call the setProjectStatusBadge function on page load
         setProjectStatusBadge("{{ project.status }}");
-        peer_view_tasks("{{ project.id }}")
+        peer_view_tasks()
     });
 </script>
 {% endblock %}

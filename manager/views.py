@@ -1,5 +1,5 @@
+from app.decorators import group_required
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
 from app import models as app_models, views as app_views
@@ -8,13 +8,14 @@ from django.http import JsonResponse
 from constants import constants as const
 from utils import utility as util
 
-@login_required(login_url='/signin')
+@group_required(const.LEAD, const.MANAGER)
 def dashboard(request):
     if request.user.is_authenticated:
         request.session['user_role'] = app_views.get_role(request)
         return render(request,'manager/manager.html', manager_dashboard(request))
     else: return redirect('signin')
 
+@group_required(const.LEAD, const.MANAGER)
 def create_task(request):
     import datetime
     if request.method == 'POST':
@@ -37,15 +38,18 @@ def create_task(request):
         return JsonResponse({'status': 200})
     return render(request, 'manager/create_task.html')
 
+@group_required(const.LEAD, const.MANAGER)
 def list_projects(request):
     return render(request, 'manager/list_projects.html')
 
+@group_required(const.LEAD, const.MANAGER)
 def view_project(request, projectid):
     project = app_models.Project.objects.filter(id=projectid).first()
     request.session['project_id'] = projectid
     project = util.as_dict(project)
     return render(request, 'manager/view_project.html', {"project": project})
 
+@group_required(const.LEAD, const.MANAGER)
 def change_project_status(request, projectid):
     if request.method == 'POST':
         status = request.POST.get('status')
@@ -67,24 +71,26 @@ def change_project_status(request, projectid):
             return JsonResponse({"error": "Project not found."}, status=404)
     return JsonResponse({"error": "Invalid request."}, status=400)
 
+@group_required(const.LEAD, const.MANAGER)
 def delete_task(request, projectid, taskid):
     app_models.Task.objects.filter(id=taskid).delete()
     return redirect(f'/manager/view-project/{projectid}/')
 
+@group_required(const.LEAD, const.MANAGER)
 def assign_task(request):
-    if request.method == 'POST':
-        user_id = request.POST.get('user_id')
-        task_id = request.POST.get('task_id')
-        task = app_models.Task.objects.get(id=task_id)
-        peer = User.objects.get(id=user_id)
+    user_id = request.POST.get('user_id')
+    task_id = request.POST.get('task_id')
+    task = app_models.Task.objects.get(id=task_id)
+    peer = User.objects.get(id=user_id)
+    if task and peer:
         task.assigned_to = peer
         task.save()
         app_views.send_task_mail(user_id, task_id)
         project_id = request.session.get('project_id')
         return JsonResponse({'status': 200, 'project_id': project_id})
-    users = User.objects.all()
-    return render(request, 'assign_task.html', {'task': task, 'users': users})
+    return JsonResponse({'status': 400})
 
+@group_required(const.LEAD, const.MANAGER)
 def remove_assigned_peer(request):
     if request.method == 'POST':
         task_id = request.POST.get('taskid')
@@ -94,6 +100,7 @@ def remove_assigned_peer(request):
         project_id = request.session.get('project_id')
         return JsonResponse({'project_id': project_id})
 
+@group_required(const.LEAD, const.MANAGER)
 def view_tasks(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         tasks = app_models.Task.objects.all()
@@ -108,9 +115,10 @@ def view_tasks(request):
         return JsonResponse({'tasks': tasks_dict})
     return render(request, 'manager/view_tasks.html')
 
+@group_required(const.LEAD, const.MANAGER)
 def manager_dashboard(request):
     context = {}
-    projects = app_models.Project.objects.all()
+    projects = app_models.Project.objects.filter(manager=request.user)
     total_projects = projects.count()
     total_tasks = app_models.Task.objects.all().count()
 

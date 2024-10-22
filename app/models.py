@@ -1,11 +1,11 @@
+from django.contrib.auth.models import User, BaseUserManager
 from django.db import models
-from django.contrib.auth.models import User
 
 class Project(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64)
     description = models.TextField()
-    lead = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    manager = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     client_name = models.CharField(max_length=64)
     status = models.CharField(max_length=10, default="DESIGN")
     created = models.DateTimeField(auto_now_add=True)
@@ -17,7 +17,7 @@ class Project(models.Model):
         return (
             f"Project: {self.name}\n"
             f"Description: {self.description}\n"
-            f"Lead: {self.lead.username if self.lead else 'No lead assigned'}\n"
+            f"Lead: {self.manager.username if self.manager else 'No manager assigned'}\n"
             f"Client: {self.client_name}\n"
             f"Status: {self.status}\n"
             f"Start Date: {self.started.strftime('%Y-%m-%d')}\n"
@@ -33,6 +33,8 @@ class Task(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     assigned_to = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     status = models.CharField(max_length=10, default="TODO")
+    # correction = models.TextField()
+    # pull_request = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
     started = models.DateTimeField(null=True)
     updated = models.DateTimeField(auto_now=True)
@@ -69,3 +71,12 @@ class Permisison(models.Model):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=15, blank=True, null=True)
+
+# class ActiveStaffManager(BaseUserManager):
+#     def get_queryset(self):
+#         return super().get_queryset().filter(is_superuser=False)
+    
+#     def get_by_natural_key(self, username):
+#         return self.get(**{self.model.USERNAME_FIELD: username})
+
+# User.add_to_class('active_staff', ActiveStaffManager())

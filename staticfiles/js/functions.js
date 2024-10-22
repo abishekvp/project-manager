@@ -253,12 +253,62 @@ function assign_task() {
     });
 }
 
+function assign_project() {
+    const form = document.getElementById('assignProjectModal');
+    const formData = new FormData(form);
+    $.ajax({
+        type: "POST",
+        url: "/lead/assign-task",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            get_tasks(response.project_id);
+            $('#assignProjectModal').modal('hide');
+        },
+        error: function (error) {
+            console.error("Error assigning task:", error);
+        }
+    });
+}
+
+$('#manager-search-input').on('keyup', function() {
+    const query = $(this).val();
+    if (query.length > 2) {  // Trigger search when input has more than 2 characters
+        $.ajax({
+            type: "GET",
+            url: `/search-manager/`,
+            data: { query: query },
+            success: function (response) {
+                const searchResults = $('#user-search-results');
+                searchResults.empty();
+                response.users.forEach(user => {
+                    searchResults.append(
+                        `<li class="list-group-item" onclick="selectManager(${user.id}, '${user.username}')">
+                            ${user.username}
+                        </li>`
+                    );
+                });
+            },
+            error: function (error) {
+                console.error("Error searching users:", error);
+            }
+        });
+    }
+});
+
+function selectManager(managerid, username) {
+    $('#assignProjectForm input[name="manager_id"]').val(managerid);
+    $('#manager-search-input').val(username);
+    $('#manager-search-results').empty();
+}
+
 $('#user-search-input').on('keyup', function() {
     const query = $(this).val();
     if (query.length > 2) {  // Trigger search when input has more than 2 characters
         $.ajax({
             type: "GET",
-            url: `/search-users/`,  // URL pattern to search for users
+            url: `/search-users/`,
             data: { query: query },
             success: function (response) {
                 const searchResults = $('#user-search-results');
@@ -540,5 +590,22 @@ function approve_user(id) {
         success: function (response) {
             load_members()
         },
+    });
+}
+
+function assign_project_manager(projectid) {
+    const form = document.getElementById('assignLeadForm');
+    const formData = new FormData(form);
+    $.ajax({
+        type: "POST",
+        url: "/lead/assign-project-manager",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+        },
+        error: function (error) {
+            console.error("Error assigning project lead:", error);
+        }
     });
 }

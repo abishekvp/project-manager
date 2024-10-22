@@ -15,4 +15,6 @@ urlpatterns = [
     path('edit-profile', views.edit_profile, name='edit-profile'),
     path('assign-task', views.assign_task, name='assign-task'),
     path('view-project', views.view_project, name='view-project'),
+    path('get-task-list', views.get_task_list, name='get-task-list'),
+    path('task-detail/', views.task_detail, name='task-detail'),
 ]

@@ -1,5 +1,5 @@
+from app.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import User
@@ -10,11 +10,14 @@ from .models import Project, Task, Profile
 from utils import utility
 from .mail_server import MailServer
 # abiraj asrif420
-@login_required(login_url='/signin/')
+
 def index(request):
     if request.user.is_authenticated:
-        request.session['user_role'] = get_role(request)
-        return redirect(get_role(request))
+        try:
+            request.session['user_role'] = get_role(request)
+            return redirect(get_role(request))
+        except:
+            return redirect('/signout')
     else:
         return redirect('signin')
 
@@ -26,21 +29,26 @@ def csrf_error_view(request, exception):
 
 def get_role(request):
     if request.user.is_authenticated:
-        role = request.user.groups.all()[0].name
-        role = role.lower()
-        return role
-    else: return ""
+        try:
+            role = request.user.groups.all()[0].name
+            role = role.lower()
+            return role
+        except:
+            messages.error(request, 'User not found')
+            return "/signout"
+    else:
+        return "/signin"
 
 def signup(request):
     if request.user.is_authenticated:return render(request,'index.html')
     elif request.method=="POST":
         username = request.POST['username']
         email = request.POST['email']
-        role = str(request.POST['role']).upper()
+        role = str(request.POST['role']).lower()
         password = request.POST['password']
         if User.objects.filter(username=username).exists() and User.objects.filter(email=email).exists(): messages.error(request, 'Username and Email already exists')
-        elif User.objects.filter(username=username).exists(): messages.info(request, 'Username already exists')
-        elif User.objects.filter(email=email).exists(): messages.info(request, 'Email already exists')
+        elif User.objects.filter(username=username).exists(): messages.error(request, 'Username already exists')
+        elif User.objects.filter(email=email).exists(): messages.error(request, 'Email already exists')
         else:
             if role:
                 user = User.objects.create_user(username, email, password, is_active=False)
@@ -58,46 +66,47 @@ def signup(request):
 def signin(request):
     if request.user.is_authenticated:return render(request,'index.html')
     elif request.method == 'POST':    
-        username = request.POST["username"]
+        username = str(request.POST["username"]).lower()
         password = request.POST["password"]
-        if '@' in username: username = User.objects.get(email=username.lower()).username
-        user = authenticate(request, username=username, password=password)
-        if user:
-            login(request, user)
-            role = get_role(request)
-            request.session['user_role'] = role
-            return redirect(role)
+        filter_dict = {}
+        if '@' and '.' in username:
+            username['email'] = username
+        else: filter_dict['username'] = username
+        user = User.objects.filter(**filter_dict).first()
+        if user and not user.is_superuser:
+            if not user.is_active: messages.error(request, 'User needs to be approved')
+            elif authenticate(request, username=username, password=password):
+                login(request, user)
+                role = get_role(request)
+                request.session['user_role'] = role
+                return redirect(role)
         else: messages.error(request, 'User not found')
         return redirect("signin")
-    else:return render(request,'signin.html')
+    else: return render(request,'signin.html')
 
 def signout(request):
     if request.user.is_authenticated:logout(request)
     return redirect('signin')
-
-def lead(request):
-    if request.user.is_authenticated and get_role(request)=="lead":
-        return redirect('lead')
-    else: return redirect('signin')
-
-def peer(request):
-    if request.user.is_authenticated and get_role(request)=="peer":
-        return redirect('peer')
-    else: return redirect('signin')
 
 def get_peers(request):
     peer_name = request.POST.get("peer_name")
     users = list(User.objects.filter(username__icontains=peer_name).values_list('username', flat=True))
     return JsonResponse({"users": users})
 
+@login_required(login_url='/signin')
 def get_projects(request):
-    projects = Project.objects.all()
+    role = get_role(request)
+    if role == const.LEAD:
+        projects = Project.objects.all()
+    else:
+        projects = Project.objects.filter(manager=request.user)
     projects_dict = []
     for project in projects:
         project = utility.as_dict(project)
         projects_dict.append(project)
     return JsonResponse({"projects": projects_dict})
 
+@login_required(login_url='/signin')
 def get_tasks(request, projectid):
     project = Project.objects.filter(id=projectid).first()
     tasks = Task.objects.filter(project=project)
@@ -112,12 +121,36 @@ def get_tasks(request, projectid):
         tasks_dict.append(task)
     return JsonResponse({"tasks": tasks_dict})
 
+@login_required(login_url='/signin')
+def get_task_list(request):
+    role = get_role(request)
+    if role == const.LEAD:
+        tasks = Task.objects.all()
+    elif role == const.MANAGER:
+        tasks = Task.objects.filter(project__manager=request.user)
+    else:
+        tasks = Task.objects.filter(assigned_to=request.user)
+    tasks_dict = []
+    for task in tasks:
+        if task.assigned_to:
+            assigned_user = task.assigned_to.username
+        else:
+            assigned_user = None
+        project_name = task.project.name
+        task = utility.as_dict(task)
+        task['assigned'] = assigned_user
+        task['project'] = project_name
+        tasks_dict.append(task)
+    return JsonResponse({"tasks": tasks_dict})
+
+@login_required(login_url='/signin')
 def search_users(request):
     query = request.GET.get('query', '')
-    users = User.objects.filter(username__icontains=query)[:5]
+    users = User.objects.filter(username__icontains=query, is_active=True, is_staff=False, is_superuser=False).exclude(groups__name=const.LEAD)[:5]
     users_list = [{'id': user.id, 'username': user.username} for user in users]
     return JsonResponse({'users': users_list})
 
+@login_required(login_url='/signin')
 def update_task_status(request):
     task_status = request.POST.get('status')
     task_id = request.POST.get('taskid')
@@ -129,9 +162,11 @@ def update_task_status(request):
     task.save()
     return JsonResponse({'status': 200, 'projectid': projectid})
 
+@login_required(login_url='/signin')
 def profile(request):
     return render(request, 'profile.html', {'user': request.user})
 
+@login_required(login_url='/signin')
 def edit_profile(request):
     if request.method == 'POST':
         user = request.user
@@ -143,31 +178,45 @@ def edit_profile(request):
         return redirect('profile')
     return render(request, 'edit_profile.html', {'user': request.user})
 
-def send_task_mail(userid, taskid):
-    user = User.objects.filter(id=userid).first()
-    task = Task.objects.filter(id=taskid).first()
+@login_required(login_url='/signin')
+def send_task_mail(request, user=None, task=None, userid=None, taskid=None):
+    if (userid and taskid) and not (user and task):
+        user = User.objects.filter(id=userid).first()
+        task = Task.objects.filter(id=taskid).first()
     user_name = user.first_name or user.username
     context = const.task_mail_context(task, user_name)
     mailserver = MailServer()
-    mailserver.send_mail(to_mail=user.email, subject=context['subject'], message=context['message'])
-    return JsonResponse({'status': 200})
+    result = mailserver.send_mail(to_mail=user.email, subject=context['subject'], message=context['message'])
+    return JsonResponse({'status': result['status'], 'message': result['message']})
 
+@login_required(login_url='/signin')
 def assign_task(request):
     if request.method == 'POST':
         user_id = request.POST.get('user_id')
         task_id = request.POST.get('task_id')
         task = Task.objects.get(id=task_id)
-        peer = User.objects.get(id=user_id)
-        task.assigned_to = peer
+        user = User.objects.get(id=user_id)
+        task.assigned_to = user
         task.save()
-        send_task_mail(user_id, task_id)
+        send_task_mail(request, user=user, task=task)
         project_id = request.session.get('project_id')
         return JsonResponse({'status': 200, 'project_id': project_id})
-    users = User.objects.all()
-    return render(request, 'assign_task.html', {'task': task, 'users': users})
+    return JsonResponse({'status': 400})
 
+@login_required(login_url='/signin')
 def view_project(request):
     projectid = request.POST.get('projectid')
     request.session['project_id'] = projectid
     role = request.session.get('user_role')
-    return JsonResponse({'status': 200, 'url': f"/{role}/view-project/{projectid}/"})
+    return JsonResponse({'status': 200, 'url': f"/{role}/view-project/{projectid}"})
+
+def task_detail(request):
+    taskid = request.GET.get('taskid', '')
+    task = Task.objects.get(id=taskid)
+    if task.assigned_to:
+        assigned = task.assigned_to.username
+    else:
+        assigned = "Not Assigned"
+    task = utility.as_dict(task)
+    task['assigned'] = assigned
+    return JsonResponse({"task": task})
