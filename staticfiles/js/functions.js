@@ -144,7 +144,7 @@ function sortTaskByStatus(status){
                             <td>${task.assigned}</td>
                         </tr>
                     `);
-                }, index * 50);
+                }, index * 5);
             });
         },
     });
@@ -217,7 +217,7 @@ function view_task_details(taskid) {
         success: function (response) {
             var myModal = new bootstrap.Modal(document.getElementById('detailTaskModal'));
             myModal.show();
-            document.getElementById('detailTaskModalDescription').innerHTML = convertUrlsToLinks(response.task.description);
+            document.getElementById('detailTaskModalDescription').value = convertUrlsToLinks(response.task.description);
         },
         error: function (error) {
             console.error("Error searching users:", error);
@@ -417,7 +417,7 @@ function view_tasks() {
                             <td>${task.assigned}</td>
                         </tr>
                     `);
-                }, index * 50);
+                }, index * 5);
             });
         },
     });
@@ -444,7 +444,7 @@ function load_members() {
                             </td>
                         </tr>
                     `);
-                }, index * 50);
+                }, index * 5);
             });
             // Clear the leads table and populate it
             $(".leads_table_data").empty();
@@ -460,7 +460,7 @@ function load_members() {
                             </td>
                         </tr>
                     `);
-                }, index * 50);
+                }, index * 5);
             });
             $(".managers_table_data").empty();
             response["managers"].forEach((user, index) => {
@@ -475,7 +475,7 @@ function load_members() {
                             </td>
                         </tr>
                     `);
-                }, index * 50);
+                }, index * 5);
             });
             // Clear the peers table and populate it
             $(".peers_table_data").empty();
@@ -491,7 +491,7 @@ function load_members() {
                             </td>
                         </tr>
                     `);
-                }, index * 50);
+                }, index * 5);
             });
         },
     });
@@ -555,7 +555,7 @@ function peer_view_tasks() {
                             <td>${statusOptions}</td>
                         </tr>
                     `);
-                }, index * 50); // Delay each task by 200ms (adjust as needed)
+                }, index * 5); // Delay each task by 200ms (adjust as needed)
             });
         },
     });
