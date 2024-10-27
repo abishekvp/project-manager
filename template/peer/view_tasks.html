@@ -1,9 +1,9 @@
-{% extends 'lead/dashboard.html' %}
-{% block lead_board %}
+{% extends 'peer/dashboard.html' %}
+{% block peer_board %}
 <div class="table-responsive">
     <div class="d-flex justify-content-end w-100 mb-3 bg-secondary"> <!-- Bootstrap gray background -->
         <a class="nav-link p-3">
-            <select onchange="sortTaskByStatus(this.value)" class="form-select task-status">
+            <select onchange="peersortTaskByStatus(this.value)" class="form-select task-status">
                 <option value="ALL">ALL</option>
                 <option value="TODO">TODO</option>
                 <option value="IN-PROGRESS">IN PROGRESS</option>

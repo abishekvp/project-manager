@@ -47,7 +47,6 @@ function get_projects() {
                     <tr>
                         <td>${project.id}</td>
                         <td>${project.name}</td>
-                        <td>${project.description}</td>
                         <td>${project.created}</td>
                         <td>${project.started}</td>
                         <td>${project.updated}</td>
@@ -66,147 +65,105 @@ function get_projects() {
     });
 };
 
-function get_tasks(id) {
-    const projectId = id; // Get the project ID from your template
-    $.ajax({
-        type: "GET",
-        url: `/get-task-list`, // Assuming your backend supports this URL pattern
-        success: function (response) {
-            const tasksTableBody = $(".tasks_table_data"); // Assuming you have a table body with this class
-            tasksTableBody.empty(); // Clear any existing tasks
+// function get_tasks(id) {
+//     $.ajax({
+//         type: "GET",
+//         url: `/get-task-list`, // Assuming your backend supports this URL pattern
+//         success: function (response) {
+//             const tasksTableBody = $(".tasks_table_data"); // Assuming you have a table body with this class
+//             tasksTableBody.empty(); // Clear any existing tasks
 
-            // Loop through the tasks and append them to the table
-            response.tasks.forEach((task, index) => {
-                let taskActions;
-                if (task.assigned) {
-                    taskActions = `
-                        <i class="fas fa-trash-alt text-danger me-3 px-1" onclick="delete_task(${id}, ${task.id})" style="cursor: pointer;" title="Delete"></i>
-                        <span class="text-success">${task.assigned}</span>
-                        <i class="fas fa-user-slash text-warning ms-2" onclick="remove_assigned_peer(${task.id})" style="cursor: pointer;" title="Remove User"></i>
-                    `;
-                } else {
-                    taskActions = `
-                        <i class="fas fa-trash-alt text-danger me-3 px-1" onclick="delete_task(${id}, ${task.id})" style="cursor: pointer;" title="Delete"></i>
-                        <i class="fa-solid fa-user text-primary me-3 px-1" onclick="open_assign_task_form(${task.id})" style="cursor: pointer;" title="Assign"></i>
-                    `;
-                }
+//             // Loop through the tasks and append them to the table
+//             response.tasks.forEach((task, index) => {
+//                 let taskActions;
+//                 if (task.assigned) {
+//                     taskActions = `
+//                         <i class="fas fa-trash-alt text-danger me-3 px-1" onclick="delete_task(${id}, ${task.id})" style="cursor: pointer;" title="Delete"></i>
+//                         <span class="text-success">${task.assigned}</span>
+//                         <i class="fas fa-user-slash text-warning ms-2" onclick="remove_assigned_peer(${task.id})" style="cursor: pointer;" title="Remove User"></i>
+//                     `;
+//                 } else {
+//                     taskActions = `
+//                         <i class="fas fa-trash-alt text-danger me-3 px-1" onclick="delete_task(${id}, ${task.id})" style="cursor: pointer;" title="Delete"></i>
+//                         <i class="fa-solid fa-user text-primary me-3 px-1" onclick="open_assign_task_form(${task.id})" style="cursor: pointer;" title="Assign"></i>
+//                     `;
+//                 }
 
-                // Create a select element for task status with dynamic class
-                const statusOptions = `
-                    <select onchange="updateTaskStatus(${task.id}, this.value)" class="form-select task-status" id="${task.id}" style="${TASK_STATUS_COLORS[task.status]}">
-                        <option value="TODO" ${task.status === 'TODO' ? 'selected' : ''}>TODO</option>
-                        <option value="IN-PROGRESS" ${task.status === 'IN-PROGRESS' ? 'selected' : ''}>IN PROGRESS</option>
-                        <option value="VERIFY" ${task.status === 'VERIFY' ? 'selected' : ''}>VERIFY</option>
-                        <option value="CORRECTION" ${task.status === 'CORRECTION' ? 'selected' : ''}>CORRECTION</option>
-                        <option value="HOLD" ${task.status === 'HOLD' ? 'selected' : ''}>HOLD</option>
-                        <option value="COMPLETE" ${task.status === 'COMPLETE' ? 'selected' : ''}>COMPLETE</option>
-                    </select>
-                `;
+//                 // Create a select element for task status with dynamic class
+//                 const statusOptions = `
+//                     <select onchange="updateTaskStatus(${task.id}, this.value)" class="form-select task-status" id="${task.id}" style="${TASK_STATUS_COLORS[task.status]}">
+//                         <option value="TODO" ${task.status === 'TODO' ? 'selected' : ''}>TODO</option>
+//                         <option value="IN-PROGRESS" ${task.status === 'IN-PROGRESS' ? 'selected' : ''}>IN PROGRESS</option>
+//                         <option value="VERIFY" ${task.status === 'VERIFY' ? 'selected' : ''}>VERIFY</option>
+//                         <option value="CORRECTION" ${task.status === 'CORRECTION' ? 'selected' : ''}>CORRECTION</option>
+//                         <option value="HOLD" ${task.status === 'HOLD' ? 'selected' : ''}>HOLD</option>
+//                         <option value="COMPLETE" ${task.status === 'COMPLETE' ? 'selected' : ''}>COMPLETE</option>
+//                     </select>
+//                 `;
 
-                tasksTableBody.append(
-                    `<tr>
-                        <td>${task.id}</td>
-                        <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_details('${task.id}')" style="cursor: pointer;" title="Description"></i></td>
-                        <td>${task.created}</td>
-                        <td>${task.started}</td>
-                        <td>${task.updated}</td>
-                        <td>${task.due}</td>
-                        <td>${statusOptions}</td>
-                        <td>${taskActions}</td>
-                    </tr>`
-                );
-            });
-        },
-        error: function (error) {
-            console.error("Error fetching tasks:", error);
-        }
-    });
-}
-
-function sortTaskByStatus(status){
-    $.ajax({
-        type: "GET",
-        url: `/sort-tasks-by-status/${status}`,
-        success: function (response) {
-            $(".tasks_table_data").empty();
-            response["tasks"].forEach((task, index) => {
-                setTimeout(function () {
-                    $(".tasks_table_data").append(`
-                        <tr>
-                            <td>${task.id}</td>
-                            <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_description('${task.description}')" style="cursor: pointer;" title="Description"></i></td>
-                            <td>${task.project}</td>
-                            <td>${task.created}</td>
-                            <td>${task.started}</td>
-                            <td>${task.updated}</td>
-                            <td>${task.due}</td>
-                            <td><span class="px-2 py-1 rounded" style="${TASK_STATUS_COLORS[task.status]}">${task.status}</span></td>
-                            <td>${task.assigned}</td>
-                        </tr>
-                    `);
-                }, index * 50);
-            });
-        },
-    });
-}
+//                 tasksTableBody.append(
+//                     `<tr>
+//                         <td>${task.id}</td>
+//                         <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_details('${task.id}')" style="cursor: pointer;" title="Description"></i></td>
+//                         <td>${task.created}</td>
+//                         <td>${task.started}</td>
+//                         <td>${task.updated}</td>
+//                         <td>${task.due}</td>
+//                         <td>${statusOptions}</td>
+//                         <td>${taskActions}</td>
+//                     </tr>`
+//                 );
+//             });
+//         },
+//         error: function (error) {
+//             console.error("Error fetching tasks:", error);
+//         }
+//     });
+// }
 
 // Function to remove the assigned user
-function remove_assigned_peer(taskId) {
-    var remove = confirm("Are you sure you want to remove the assigned user?");
-    if (!remove) {
-        return;
-    }
-    $.ajax({
-        type: "POST",
-        url: `/lead/remove-assigned-peer`,
-        data: {
-            taskid: taskId,
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-        },
-        success: function (response) {
-            get_tasks(response.project_id); // Refresh the tasks list after unassignment
-        },
-        error: function (error) {
-            console.error("Error removing assigned user:", error);
-        }
-    });
+function remove_assigned_peer(taskid) {
+    $('#confirmRemoveAssigned').modal('show');
+    $("#confirmRemoveAssignedBtn").click(function(){
+        $.ajax({
+            type: "POST",
+            url: `/remove-assigned-peer`,
+            data: {
+                taskid: taskid,
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            },
+            success: function (response) {
+                $('#confirmRemoveAssigned').modal('hide');
+                get_project_tasks(response.project_id);
+            },
+        });
+    })
 }
-
-function updateTaskStatus(taskId, newStatus) {
-    $.ajax({
-        type: "POST",
-        url: `/update-task-status`, // Assuming your backend supports this URL pattern
-        data: {
-            status: newStatus,
-            taskid: taskId,
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-        },
-        success: function (response) {
-            setTaskStatusBadge(taskId, newStatus)
-            get_tasks(response.projectid);
-        },
-    });
-};
 
 function delete_project(id) {
-    const confirmation = confirm("Are you sure you want to delete this project?");
-    if (confirmation) {
-        window.location.href = "/lead/delete-project/" + id
-    };
+    $('#confirmDeleteProject').modal('show');
+    $("#confirmDeleteProjectBtn").click(function(){
+        $.ajax({
+            type: "POST",
+            url: `/delete-project`,
+            data: {
+                project_id: id,
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            },
+            success: function (response) {
+                window.location.href = "/lead/projects";
+            },
+        });
+    })
 };
-
-function delete_task(pid, tid) {
-    const confirmation = confirm("Are you sure you want to delete this task?");
-    if (confirmation) {
-        window.location.href = "/lead/delete-task/" + pid +"/"+ tid
-    };
-}
 
 function convertUrlsToLinks(text) {
     const urlPattern = /(https?:\/\/[^\s]+)/g;
-    return text
-        .replace(urlPattern, '<a href="$1" target="_blank">$1</a>')
-        .replace(/\n/g, '<br>');
+    return text.replace(urlPattern, function (url) {
+        // Extract the hostname from the URL for display
+        let displayText = (new URL(url)).hostname;
+        return `<a href="${url}" target="_blank">${displayText}</a>`;
+    }).replace(/\n/g, '<br>');
 }
 
 function view_task_details(taskid) {
@@ -217,7 +174,24 @@ function view_task_details(taskid) {
         success: function (response) {
             var myModal = new bootstrap.Modal(document.getElementById('detailTaskModal'));
             myModal.show();
-            document.getElementById('detailTaskModalDescription').innerHTML = convertUrlsToLinks(response.task.description);
+            $('#detailTaskModalName').text(response.task.name);
+            $('#detailTaskModalDescription').html(convertUrlsToLinks(response.task.description));
+            $('#detailTaskModalProject').text(response.task.project);
+            $('#detailTaskModalAssigned').text(response.task.assigned);
+            $('#detailTaskModalStatus').text(response.task.status);
+            $('#detailTaskModalDue').text(response.task.due);
+            if (response.task.pull_request){
+                $('#detailTaskModalPullRequest').html(convertUrlsToLinks(response.task.pull_request));
+            }
+            if (response.task.correction){
+                $('#detailTaskModalCorrection').html(convertUrlsToLinks(response.task.correction));
+            }
+            if (response.task.reason){
+                $('#detailTaskModalHold').html(convertUrlsToLinks(response.task.reason));
+            }
+            $('#detailTaskModalCreated').text(response.task.created);
+            $('#detailTaskModalStarted').text(response.task.started);
+            $('#detailTaskModalUpdated').text(response.task.updated);
         },
         error: function (error) {
             console.error("Error searching users:", error);
@@ -296,9 +270,10 @@ function changeProjectStatus(projectId) {
     const selectedStatus = document.getElementById("project-status-select").value;
     $.ajax({
         type: "POST",
-        url: `/lead/change-project-status/${projectId}/`,
+        url: `/change-project-status`,
         data: {
-            'status': selectedStatus,
+            status: selectedStatus,
+            project_id: projectId,
             csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
         },
         success: function(response) {
@@ -306,25 +281,6 @@ function changeProjectStatus(projectId) {
         },
         error: function(error) {
             window.location.reload();
-        }
-    });
-}
-
-function assign_task() {
-    const form = document.getElementById('assignTaskForm');
-    const formData = new FormData(form);
-    $.ajax({
-        type: "POST",
-        url: "/assign-task",
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function (response) {
-            get_tasks(response.project_id);
-            $('#assignTaskModal').modal('hide');
-        },
-        error: function (error) {
-            console.error("Error assigning task:", error);
         }
     });
 }
@@ -395,33 +351,6 @@ function selectManager(managerid, username) {
     $('#manager-search-input').val(username);
     $('#manager-search-results').empty();
 }
-
-function view_tasks() {
-    $.ajax({
-        type: "GET",
-        url: "/get-task-list",
-        success: function (response) {
-            $(".tasks_table_data").empty();
-            response["tasks"].forEach((task, index) => {
-                setTimeout(function () {
-                    $(".tasks_table_data").append(`
-                        <tr>
-                            <td>${task.id}</td>
-                            <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_description('${task.description}')" style="cursor: pointer;" title="Description"></i></td>
-                            <td>${task.project}</td>
-                            <td>${task.created}</td>
-                            <td>${task.started}</td>
-                            <td>${task.updated}</td>
-                            <td>${task.due}</td>
-                            <td><span class="px-2 py-1 rounded" style="${TASK_STATUS_COLORS[task.status]}">${task.status}</span></td>
-                            <td>${task.assigned}</td>
-                        </tr>
-                    `);
-                }, index * 50);
-            });
-        },
-    });
-};
 
 function load_members() {
     $.ajax({
@@ -496,86 +425,6 @@ function load_members() {
         },
     });
 }
-
-function get_peer_projects() {
-    $.ajax({
-        type: "GET",
-        url: "/peer/view-projects",
-        success: function (response) {
-            $(".projects_table_data").empty();
-            response["projects"].forEach(project => {
-                $(".projects_table_data").append(`
-                    <tr>
-                        <td>${project.id}</td>
-                        <td>${project.name} <i class="fa-solid fa-up-right-from-square text-info px-1" onclick="peer_view_project(${project.id})" style="cursor: pointer;" title="View"></i></td>
-                        <td>${project.created}</td>
-                        <td>${project.started}</td>
-                        <td>${project.updated}</td>
-                        <td>${project.due}</td>
-                        <td><span class="badge bg-${STATUS_COLOR[project.status]}">${project.status}</span></td>
-                    </tr>
-                `);
-            });
-        },
-    });
-}
-
-function peer_view_project(id) {
-    window.localStorage.setItem('project_id', id);
-    window.location.href = '/peer/view-project/' + id
-}
-
-function peer_view_tasks() {
-    $.ajax({
-        type: "GET",
-        url: "/peer/peer-tasks",
-        success: function (response) {
-            $(".peer_tasks_table_data").empty();
-            response["tasks"].forEach((task, index) => {
-                setTimeout(function () {
-                    const statusOptions = `
-                        <select onchange="updatePeerTaskStatus(${task.id}, this.value)" class="form-select task-status" id="${task.id}" style="${TASK_STATUS_COLORS[task.status]}">
-                            <option value="TODO" ${task.status === 'TODO' ? 'selected' : ''}>TODO</option>
-                            <option value="IN-PROGRESS" ${task.status === 'IN-PROGRESS' ? 'selected' : ''}>IN PROGRESS</option>
-                            <option value="VERIFY" ${task.status === 'VERIFY' ? 'selected' : ''}>VERIFY</option>
-                            <option value="CORRECTION" ${task.status === 'CORRECTION' ? 'selected' : ''}>CORRECTION</option>
-                            <option value="HOLD" ${task.status === 'HOLD' ? 'selected' : ''}>HOLD</option>
-                            <option value="COMPLETE" ${task.status === 'COMPLETE' ? 'selected' : ''}>COMPLETE</option>
-                        </select>
-                    `;
-                    $(".peer_tasks_table_data").append(`
-                        <tr>
-                            <td>${task.id}</td>
-                            <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_description('${task.description}')" style="cursor: pointer;" title="Description"></i></td>
-                            <td>${task.project}</td>
-                            <td>${task.created}</td>
-                            <td>${task.started}</td>
-                            <td>${task.updated}</td>
-                            <td>${task.due}</td>
-                            <td>${statusOptions}</td>
-                        </tr>
-                    `);
-                }, index * 50); // Delay each task by 200ms (adjust as needed)
-            });
-        },
-    });
-}
-
-function updatePeerTaskStatus(taskId, newStatus) {
-    $.ajax({
-        type: "POST",
-        url: `/peer/update-task-status`,
-        data: {
-            status: newStatus,
-            taskid: taskId,
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-        },
-        success: function (response) {
-            setTaskStatusBadge(taskId, newStatus)
-            peer_view_tasks();
-        },
-    });
-};
 
 function test_mail_server() {
     var formData = new FormData(document.getElementById('mail-server-form'));

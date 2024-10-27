@@ -33,8 +33,9 @@ class Task(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     assigned_to = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     status = models.CharField(max_length=10, default="TODO")
-    # correction = models.TextField()
-    # pull_request = models.TextField()
+    correction = models.TextField(null=True)
+    pull_request = models.TextField(null=True)
+    reason = models.TextField(null=True)
     created = models.DateTimeField(auto_now_add=True)
     started = models.DateTimeField(null=True)
     updated = models.DateTimeField(auto_now=True)
@@ -70,7 +71,13 @@ class Permisison(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    profile_image = models.TextField(blank=True, null=True)
     role = models.CharField(max_length=15, blank=True, null=True)
+    designation = models.CharField(max_length=64, blank=True, null=True)
+    department = models.CharField(max_length=64, blank=True, null=True)
+    phone = models.CharField(max_length=15, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    
 
 # class ActiveStaffManager(BaseUserManager):
 #     def get_queryset(self):

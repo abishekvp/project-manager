@@ -38,45 +38,45 @@
                             <button class="create-btn w-100 btn btn-outline-light">Dashboard</button>
                         </a>
                     </li>
-                    <a class="nav-link {% if request.path == '/lead/view-projects' %}active{% endif %}" href="{% url 'view-projects' %}">
+                    <a class="nav-link {% if 'view-project' in request.path %}active{% endif %}" href="{% url 'view-projects' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Projects</button></li>
                     </a>
-                    <a class="nav-link {% if request.path == '/lead/view-tasks' %}active{% endif %}" href="{% url 'view-tasks' %}">
+                    <a class="nav-link {% if 'view-task' in request.path %}active{% endif %}" href="{% url 'view-tasks' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Tasks</button></li>
                     </a>
-                    <a class="nav-link {% if request.path == '/lead/mail-server' %}active{% endif %}" href="{% url 'mail-server' %}">
+                    <a class="nav-link {% if 'mail-server' in request.path %}active{% endif %}" href="{% url 'mail-server' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Mail Server</button></li>
                     </a>
-                    <a class="nav-link {% if request.path == '/lead/view-members' %}active{% endif %}" href="{% url 'view-members' %}">
+                    <a class="nav-link {% if 'view-members' in request.path %}active{% endif %}" href="{% url 'view-members' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Members</button></li>
                     </a>
-                    <a class="nav-link {% if request.path == '/profile' %}active{% endif %}" href="{% url 'profile' %}">
+                    <a class="nav-link {% if 'profile' in request.path %}active{% endif %}" href="{% url 'profile' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Profile</button></li>
                     </a>
                     {% elif request.session.user_role == 'manager' %}
                     <a class="nav-link {% if request.path == '/manager/' %}active{% endif %}" href="/manager/">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Dashboard</button></li>
                     </a>
-                    <a class="nav-link {% if request.path == 'manager-list-projects' %}active{% endif %}" href="{% url 'manager-list-projects' %}">
+                    <a class="nav-link {% if 'view-project' in request.path %}active{% endif %}" href="{% url 'manager-list-projects' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Projects</button></li>
                     </a>
-                    <a class="nav-link {% if request.path == 'manager-view-tasks' %}active{% endif %}" href="{% url 'manager-view-tasks' %}">
+                    <a class="nav-link {% if 'view-tasks' in request.path %}active{% endif %}" href="{% url 'manager-view-tasks' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Tasks</button></li>
                     </a>
-                    <a class="nav-link {% if request.path == 'profile' %}active{% endif %}" href="{% url 'profile' %}">
+                    <a class="nav-link {% if 'profile' in request.path %}active{% endif %}" href="{% url 'profile' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Profile</button></li>
                     </a>
                     {% elif request.session.user_role == 'peer' %}
                     <a class="nav-link {% if request.path == '/peer/' %}active{% endif %}" href="/peer/">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Dashboard</button></li>
                     </a>
-                    <a class="nav-link {% if request.path == '/peer/view-projects' %}active{% endif %}" href="{% url 'view-peer-projects' %}">
+                    <a class="nav-link {% if 'view-project' in request.path %}active{% endif %}" href="{% url 'view-peer-projects' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Projects</button></li>
                     </a>
-                    <a class="nav-link {% if request.path == '/peer/peer-tasks' %}active{% endif %}" href="{% url 'peer-tasks' %}">
+                    <a class="nav-link {% if 'peer-tasks' in request.path %}active{% endif %}" href="{% url 'peer-tasks' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Tasks</button></li>
                     </a>
-                    <a class="nav-link {% if request.path == '/profile' %}active{% endif %}" href="{% url 'profile' %}">
+                    <a class="nav-link {% if 'profile' in request.path %}active{% endif %}" href="{% url 'profile' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Profile</button></li>
                     </a>
                     {% endif %}

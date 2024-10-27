@@ -44,11 +44,52 @@
     {% else %}
         {% block sign %}{% endblock %}
     {% endif %}
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal fade" id="assignTaskModal" tabindex="-1" aria-labelledby="assignTaskModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Delete</h5>
+                    <h5 class="modal-title" id="assignTaskModalLabel">Assign Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="user-search-input" class="form-label">Search Peer</label>
+                        <input type="text" class="form-control" id="user-search-input" placeholder="Type to search...">
+                    </div>
+                    
+                    <ul id="user-search-results" class="list-group mb-3"></ul>
+    
+                    <div id="assignTaskForm">
+                        <input type="hidden" name="task_id">
+                        <input type="hidden" name="user_id">
+                        <button class="btn btn-primary" onclick="assign_task()">Assign Task</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="confirmRemoveAssigned" tabindex="-1" aria-labelledby="confirmRemoveAssignedLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmRemoveAssignedLabel">Confirm Remove</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    "Please confirm if you intend to proceed with removing this task assignment to the peer."
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="confirmRemoveAssignedBtn">Remove</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="confirmDeleteProject" tabindex="-1" aria-labelledby="confirmDeleteProjectLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteProjectLabel">Confirm Delete</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -56,27 +97,144 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteProjectBtn">Delete</button>
                 </div>
             </div>
         </div>
     </div>
-    <div class="modal fade" id="detailTaskModal" tabindex="-1" aria-labelledby="detailTaskModalLabel" aria-hidden="true">
+    <div class="modal fade" id="confirmDeleteTask" tabindex="-1" aria-labelledby="confirmDeleteTaskLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="detailTaskModalLabel">Task Description</h5>
+                    <h5 class="modal-title" id="confirmDeleteTaskLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this Task?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteTaskBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="taskCorrection" tabindex="-1" aria-labelledby="taskCorrectionLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="taskCorrectionLabel">Corrections - <span id="task-name"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="taskCorrectionForm">
+                        <input type="hidden" name="task_id">
+                        <textarea name="taskCorrectionContext" id="taskCorrectionContext" class="form-control" rows="5" placeholder="Enter correction details here..."></textarea>
+                        <button class="btn btn-primary" onclick="add_task_correction()">Update</button>
+                        <button type="button" class="btn btn-secondary" onclick="reload_project_task_with_localstorage()" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="taskPullRequest" tabindex="-1" aria-labelledby="taskPullRequestLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="taskPullRequestLabel">Pull Request - <span id="task-name"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="taskPullRequestForm">
+                        <input type="hidden" name="task_id">
+                        <textarea name="taskPullRequestContext" id="taskPullRequestContext" class="form-control" rows="5" placeholder="Enter pull request details here..."></textarea>
+                        <button class="btn btn-primary" onclick="add_task_pull_request()">Update</button>
+                        <button type="button" class="btn btn-secondary" onclick="reload_project_task_with_localstorage()" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="taskHold" tabindex="-1" aria-labelledby="taskHoldLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="taskHoldLabel">Hold - <span id="task-name"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="taskHoldForm">
+                        <input type="hidden" name="task_id">
+                        <textarea name="taskHoldReason" id="taskHoldReason" class="form-control" rows="5" placeholder="Enter hold reason here..."></textarea>
+                        <button class="btn btn-primary" onclick="hold_task()">Update</button>
+                        <button type="button" class="btn btn-secondary" onclick="reload_project_task_with_localstorage()" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade detailTaskModal" id="detailTaskModal" tabindex="-1" aria-labelledby="detailTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailTaskModalLabel">Task Details</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <textarea name="20" class="form-control" id="detailTaskModalDescription"></textarea>
+                        <label for="detailTaskModalName" class="form-label font-weight-bold">Name</label>
+                        <div class="form-control" id="detailTaskModalName"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalDescription" class="form-label font-weight-bold">Description</label>
+                        <div class="form-control" id="detailTaskModalDescription"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalProject" class="form-label font-weight-bold">Project</label>
+                        <div class="form-control" id="detailTaskModalProject"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalAssigned" class="form-label font-weight-bold">Assigned</label>
+                        <div class="form-control" id="detailTaskModalAssigned"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalStatus" class="form-label font-weight-bold">Status</label>
+                        <div class="form-control" id="detailTaskModalStatus"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalDue" class="form-label font-weight-bold">Due Date</label>
+                        <div class="form-control" id="detailTaskModalDue"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalPullRequest" class="form-label font-weight-bold">Pull Request</label>
+                        <div class="form-control" id="detailTaskModalPullRequest"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalCorrection" class="form-label font-weight-bold">Corrections</label>
+                        <div class="form-control" id="detailTaskModalCorrection"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalHold" class="form-label font-weight-bold">Hold Reason</label>
+                        <div class="form-control" id="detailTaskModalHold"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalCreated" class="form-label font-weight-bold">Created</label>
+                        <div class="form-control" id="detailTaskModalCreated"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalStarted" class="form-label font-weight-bold">Started</label>
+                        <div class="form-control" id="detailTaskModalStarted"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalUpdated" class="form-label font-weight-bold">Updated</label>
+                        <div class="form-control" id="detailTaskModalUpdated"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     <script src="{% static 'js/functions.js' %}"></script>
+    <script src="{% static 'js/task.js' %}"></script>
     <script src="{% static 'js/styling.js' %}"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </body>

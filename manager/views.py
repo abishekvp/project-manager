@@ -12,7 +12,7 @@ from utils import utility as util
 def dashboard(request):
     if request.user.is_authenticated:
         request.session['user_role'] = app_views.get_role(request)
-        return render(request,'manager/manager.html', manager_dashboard(request))
+        return render(request,'manager/dashboard.html', manager_dashboard(request))
     else: return redirect('signin')
 
 @group_required(const.LEAD, const.MANAGER)
@@ -103,7 +103,8 @@ def remove_assigned_peer(request):
 @group_required(const.LEAD, const.MANAGER)
 def view_tasks(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        tasks = app_models.Task.objects.all()
+        projects = app_models.Project.objects.filter(manager=request.user)
+        tasks = app_models.Task.objects.filter(project__in=projects)
         tasks_dict = []
         for task in tasks:
             project_name = task.project.name
@@ -161,3 +162,20 @@ def manager_dashboard(request):
     context['total_projects'] = total_projects
     context['total_tasks'] = total_tasks
     return context
+
+def sort_tasks_by_status(request):
+    status = request.POST.get('status')
+    projects = app_models.Project.objects.filter(manager=request.user)
+    if status == const.TASK_ALL:
+        tasks = app_models.Task.objects.filter(project__in=projects)
+    else:
+        tasks = app_models.Task.objects.filter(status=status, project__in=projects)
+    tasks_dict = []
+    for task in tasks:
+        project_name = task.project.name
+        assigned = task.assigned_to.username if task.assigned_to else '  ---  '
+        task = util.as_dict(task)
+        task['project'] = project_name
+        task['assigned'] = assigned
+        tasks_dict.append(task)
+    return JsonResponse({'tasks': tasks_dict})

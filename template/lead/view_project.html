@@ -53,7 +53,7 @@
         </button>
         {% else %}
         <button class="btn btn-primary me-1" onclick="open_assign_project_form('{{ project.id }}')">
-            <i class="fa-solid fa-user"></i> Lead
+            <i class="fa-solid fa-user"></i> Manager
         </button>
         {% endif %}
         <button class="btn btn-danger me-1" onclick="delete_project('{{ project.id }}')">
@@ -94,7 +94,7 @@
                 <th>Actions</th>
             </tr>
         </thead>
-        <tbody id="task-list" class="tasks_table_data">
+        <tbody id="task-list" class="project_tasks_table">
         </tbody>
     </table>
 </div>
@@ -130,34 +130,6 @@
     </div>
 </div>
 <!-- Task Assignment Modal -->
-<div class="modal fade" id="assignTaskModal" tabindex="-1" aria-labelledby="assignTaskModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="assignTaskModalLabel">Assign Task</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Search input for users -->
-                <div class="mb-3">
-                    <label for="user-search-input" class="form-label">Search Peer</label>
-                    <input type="text" class="form-control" id="user-search-input" placeholder="Type to search...">
-                </div>
-                
-                <!-- Display search results here -->
-                <ul id="user-search-results" class="list-group mb-3"></ul>
-
-                <!-- Form to submit the task assignment -->
-                <form id="assignTaskForm">
-                    {% csrf_token %}
-                    <input type="hidden" name="task_id">
-                    <input type="hidden" name="user_id">
-                    <button type="submit" class="btn btn-primary" onclick="assign_task()">Assign Task</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 <div class="modal fade" id="assignProjectModal" tabindex="-1" aria-labelledby="assignProjectModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -184,7 +156,8 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         setProjectStatusBadge("{{ project.status }}");
-        get_tasks("{{ project.id }}")
+        reload_project_task("{{ project.id }}")
+        localStorage.setItem('projectid', '{{project.id}}')
     });
 </script>
 {% endblock %}

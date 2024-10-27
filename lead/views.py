@@ -54,11 +54,6 @@ def remove_project_manager(request):
         return JsonResponse({'project_id': project_id})
 
 @group_required(const.LEAD)
-def delete_project(request, projectid):
-    app_models.Project.objects.filter(id=projectid).delete()
-    return redirect('view-projects')
-
-@group_required(const.LEAD)
 def create_task(request):
     import datetime
     if request.method == 'POST':
@@ -97,41 +92,9 @@ def view_project(request, projectid):
     return render(request, 'lead/view_project.html', {"project": project})
 
 @group_required(const.LEAD)
-def change_project_status(request, projectid):
-    if request.method == 'POST':
-        status = request.POST.get('status')
-        try:
-            project = app_models.Project.objects.get(id=projectid)
-            project.status = status
-            if status == const.TASK_COMPLETE:
-                total_tasks = app_models.Task.objects.filter(project=project).count()
-                completed_tasks = app_models.Task.objects.filter(project=project, status=const.TASK_COMPLETE).count()
-                if total_tasks != completed_tasks:
-                    messages.info(request, 'All tasks must be completed before marking project as complete.')
-                    return JsonResponse({"error": "All tasks must be completed before marking project as complete."}, status=400)
-            if not project.started:
-                import datetime
-                project.started = datetime.datetime.now()
-            project.save()
-            return JsonResponse({"message": "Status updated successfully."})
-        except Exception as e:
-            return JsonResponse({"error": "Project not found."}, status=404)
-    return JsonResponse({"error": "Invalid request."}, status=400)
-
-@group_required(const.LEAD)
 def delete_task(request, projectid, taskid):
     app_models.Task.objects.filter(id=taskid).delete()
     return redirect(f'/lead/view-project/{projectid}/')
-
-@group_required(const.LEAD)
-def remove_assigned_peer(request):
-    if request.method == 'POST':
-        task_id = request.POST.get('taskid')
-        task = app_models.Task.objects.get(id=task_id)
-        task.assigned_to = None
-        task.save()
-        project_id = request.session.get('project_id')
-        return JsonResponse({'project_id': project_id})
 
 @group_required(const.LEAD)
 def view_tasks(request):

@@ -26,6 +26,37 @@ TASK_ALL = 'ALL'
 
 MAILCONFIGURE = 'MAILCONFIGURE'
 
+ADMIN_NAV = {
+    'Dashboard': 'admin-dashboard',
+    'View Projects': 'view-projects',
+    'View Tasks': 'view-tasks',
+    'View Members': 'view-members',
+    'Mail Server': 'mail-server',
+}
+
+LEAD_NAV = {
+    'Dashboard': 'lead',
+    'View Projects': 'view-projects',
+    'View Tasks': 'view-tasks',
+    'View Members': 'view-members',
+    'Mail Server': 'mail-server',
+}
+
+MANAGER_NAV = {
+    'Dashboard': 'manager',
+    'View Projects': 'view-projects',
+    'View Tasks': 'view-tasks',
+    'View Members': 'view-members',
+}
+
+PEER_NAV = {
+    'Dashboard': 'peer',
+    'View Projects': 'view-projects',
+    'View Tasks': 'view-tasks',
+    'View Members': 'view-members',
+}
+
+
 def task_mail_context(task, user_name):
     subject = f'New Task'
     message = f'''

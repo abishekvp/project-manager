@@ -47,7 +47,6 @@
             <tr>
                 <th>T-ID</th>
                 <th>Task Name</th>
-                <th>Project Name</th>
                 <th>Created</th>
                 <th>Started</th>
                 <th>Updated</th>
@@ -107,7 +106,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         // Call the setProjectStatusBadge function on page load
         setProjectStatusBadge("{{ project.status }}");
-        peer_view_tasks()
+        reload_project_task("{{ project.id }}")
     });
 </script>
 {% endblock %}

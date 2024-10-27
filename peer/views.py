@@ -10,7 +10,7 @@ from constants import constants as const
 @group_required(const.LEAD, const.PEER)
 def dashboard(request):
     if request.user.is_authenticated:
-        return render(request,'peer/peer.html', peer_dashboard(request))
+        return render(request,'peer/dashboard.html', peer_dashboard(request))
     else: return redirect('signin')
 
 @group_required(const.LEAD, const.PEER)
@@ -102,3 +102,38 @@ def peer_dashboard(request):
     context['total_tasks'] = total_tasks
 
     return context
+
+def sort_tasks_by_status(request):
+    status = request.POST.get("status")
+    status = str(status).upper()
+    if status == const.TASK_TODO:
+        status = const.TASK_TODO
+    elif status == const.TASK_PROGRESS:
+        status = const.TASK_PROGRESS
+    elif status == const.TASK_VERIFY:
+        status = const.TASK_VERIFY
+    elif status == const.TASK_CORRECTION:
+        status = const.TASK_CORRECTION
+    elif status == const.TASK_HOLD:
+        status = const.TASK_HOLD
+    elif status == const.TASK_COMPLETE:
+        status = const.TASK_COMPLETE
+
+    if status == const.TASK_ALL:
+        tasks = Task.objects.filter(assigned_to=request.user)
+    else:
+        tasks = Task.objects.filter(status=status, assigned_to=request.user)
+    if not tasks:
+        return JsonResponse({"tasks": [], "status": 400})
+    tasks_dict = []
+    for task in tasks:
+        if task.assigned_to:
+            assigned_user = task.assigned_to.username
+        else:
+            assigned_user = None
+        project_name = task.project.name
+        task = util.as_dict(task)
+        task['assigned'] = assigned_user
+        task['project'] = project_name
+        tasks_dict.append(task)
+    return JsonResponse({"tasks": tasks_dict, "status": status})
