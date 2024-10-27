@@ -77,13 +77,4 @@ class Profile(models.Model):
     department = models.CharField(max_length=64, blank=True, null=True)
     phone = models.CharField(max_length=15, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
-    
 
-# class ActiveStaffManager(BaseUserManager):
-#     def get_queryset(self):
-#         return super().get_queryset().filter(is_superuser=False)
-    
-#     def get_by_natural_key(self, username):
-#         return self.get(**{self.model.USERNAME_FIELD: username})
-
-# User.add_to_class('active_staff', ActiveStaffManager())

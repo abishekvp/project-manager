@@ -8,8 +8,8 @@ class AppConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'app'
     def ready(self):
-        config_mail_server()
         post_migrate.connect(create_default_groups, sender=self)
+        config_mail_server()
         atexit.register(on_server_stop)
 
 def create_default_groups(sender, **kwargs):
