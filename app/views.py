@@ -21,8 +21,11 @@ def index(request):
     else:
         return redirect('signin')
 
+def access_restricted(request):
+    return render(request, 'access_restricted.html')
+
 def custom_404_view(request, exception):
-    return render(request, '404.html', status=404)
+    return redirect('index')
 
 def csrf_error_view(request, exception):
     return render(request, '403.html', status=403)

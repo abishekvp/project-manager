@@ -1,5 +1,7 @@
+from django.http import HttpResponseForbidden
+from django_user_agents.utils import get_user_agent
+from django.shortcuts import render, redirect
 import logging
-from django.shortcuts import render
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +15,7 @@ class Handle500Middleware:
 
     def process_exception(self, request, exception):
         logger.error(f'An error occurred: {exception}', exc_info=True)
-        return render(request, '500.html', status=500)
+        return redirect('index')
 
 logger = logging.getLogger('django.request')
 
@@ -37,3 +39,18 @@ class LogErrorsMiddleware:
             logger.error(f"500 Internal Server Error: {request.path}")
 
         return response
+
+class RestrictMobileMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        user_agent = get_user_agent(request)
+        screen_width = request.headers.get('X-Screen-Width')
+        screen_height = request.headers.get('X-Screen-Height')
+
+        # Mobile-like screen resolution (e.g., width less than 800px)
+        if user_agent.is_mobile or (screen_width and int(screen_width) < 800):
+            return render(request, "access_restricted.html")
+        
+        return self.get_response(request)

@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-sk%m#p69^#2##-nvoppd(pf==wb0gg-rby^p--=(9)6k@ct7%)
 DEBUG = False
 # SECURITY WARNING: don't run with debug turned on in production!
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['pythonanywhere.com', 'localhost', '127.0.0.1', 'supernatural-spooky-gravestone-r547xwvgwjqcv59-8000.app.github.dev']
 
 # Application definition
 
@@ -39,6 +39,8 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'app.middleware.RestrictMobileMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
 ]
 
 ROOT_URLCONF = 'main.urls'
@@ -112,6 +114,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+ADMINS = [('abiraj', 'abirajvp@gmail.com')]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
