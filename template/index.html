@@ -234,19 +234,9 @@
         </div>
     </div>
     <script>
-        function checkScreenSize() {
-            // Set a threshold for mobile devices
-            const mobileThreshold = 768; // Pixels
-
-            // Check the screen width
-            if (window.screen.width < mobileThreshold) {
-                // Redirect to the mobile-specific URL
-                window.location.href = "/access-restricted"; // Change this to your desired URL
-            }
+        if (window.innerWidth <= 980) {
+            window.location.replace("/access-restricted");
         }
-
-        // Execute the function on page load
-        window.onload = checkScreenSize;
     </script>
     <script src="{% static 'js/functions.js' %}"></script>
     <script src="{% static 'js/task.js' %}"></script>

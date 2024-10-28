@@ -1,7 +1,7 @@
 from django.http import HttpResponseForbidden
-from django_user_agents.utils import get_user_agent
 from django.shortcuts import render, redirect
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -43,14 +43,18 @@ class LogErrorsMiddleware:
 class RestrictMobileMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-
-    def __call__(self, request):
-        user_agent = get_user_agent(request)
-        screen_width = request.headers.get('X-Screen-Width')
-        screen_height = request.headers.get('X-Screen-Height')
-
-        # Mobile-like screen resolution (e.g., width less than 800px)
-        if user_agent.is_mobile or (screen_width and int(screen_width) < 800):
-            return render(request, "access_restricted.html")
         
-        return self.get_response(request)
+    def __call__(self, request):
+        # User-Agent check to identify mobile devices
+        user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+        mobile_user_agents = [
+            "android", "iphone", "ipod", "ipad", "blackberry", "mobile",
+            "windows phone", "opera mini", "opera mobi"
+        ]
+        
+        # Check if the User-Agent matches any mobile device identifier
+        if any(re.search(mobile_agent, user_agent) for mobile_agent in mobile_user_agents):
+            return render(request, 'access_restricted.html', status=403)
+        
+        response = self.get_response(request)
+        return response
