@@ -44,6 +44,9 @@
                     <a class="nav-link {% if 'view-task' in request.path %}active{% endif %}" href="{% url 'view-tasks' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Tasks</button></li>
                     </a>
+                    <a class="nav-link {% if 'personal-task' in request.path %}active{% endif %}" href="{% url 'personal-tasks' %}">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Personal Tasks</button></li>
+                    </a>
                     <a class="nav-link {% if 'mail-server' in request.path %}active{% endif %}" href="{% url 'mail-server' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Mail Server</button></li>
                     </a>

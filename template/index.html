@@ -230,6 +230,111 @@
                         <div class="form-control" id="detailTaskModalUpdated"></div>
                     </div>
                 </div>
+                <button class="btn btn-primary" id="edit-task-btn" onclick="edit_task(this.id)">Edit Task</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade detailTaskModal detailTaskModalEdit" id="detailTaskModalEdit" tabindex="-1" aria-labelledby="detailTaskModalEditLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailTaskModalEditLabel">Edit Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="detailTaskModalEditName" class="form-label font-weight-bold">Name</label>
+                        <input type="text" name="detailTaskModalEditName" class="form-control" id="detailTaskModalEditName"></input>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalEditDescription" class="form-label font-weight-bold">Description</label>
+                        <textarea type="text" name="detailTaskModalEditDescription" class="form-control" id="detailTaskModalEditDescription"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalEditProject" class="form-label font-weight-bold">Project</label>
+                        <div name="detailTaskModalEditProject" class="form-control" id="detailTaskModalEditProject"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalEditAssigned" class="form-label font-weight-bold">Assigned</label>
+                        <div name="detailTaskModalEditAssigned" class="form-control" id="detailTaskModalEditAssigned"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalEditStatus" class="form-label font-weight-bold">Status</label>
+                        <div class="form-control" id="detailTaskModalEditStatus"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalEditDue" class="form-label font-weight-bold">Due Date</label>
+                        <input type="date" name="detailTaskModalEditDue" class="form-control" id="detailTaskModalEditDue"></input>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalEditPullRequest" class="form-label font-weight-bold">Pull Request</label>
+                        <textarea name="detailTaskModalEditPullRequest" class="form-control" id="detailTaskModalEditPullRequest"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalEditCorrection" class="form-label font-weight-bold">Corrections</label>
+                        <textarea name="detailTaskModalEditCorrection" class="form-control" id="detailTaskModalEditCorrection"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalEditHold" class="form-label font-weight-bold">Hold Reason</label>
+                        <textarea name="detailTaskModalEditHold" class="form-control" id="detailTaskModalEditHold"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalEditCreated" class="form-label font-weight-bold">Created</label>
+                        <div class="form-control" id="detailTaskModalEditCreated"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalEditStarted" class="form-label font-weight-bold">Started</label>
+                        <div class="form-control" id="detailTaskModalEditStarted"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="detailTaskModalEditUpdated" class="form-label font-weight-bold">Updated</label>
+                        <div class="form-control" id="detailTaskModalEditUpdated"></div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="edit-task-btn" onclick="update_task_detail(this.id)">Update</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createTaskModalLabel">Create Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createTaskModalForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="task-name" class="form-label">Task Name</label>
+                            <input type="text" class="form-control" id="task-name" name="task-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="task-description" class="form-label">Task Description</label>
+                            <textarea class="form-control" id="task-description" name="task-description" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="search-user-input" class="form-label">Search User</label>
+                            <input type="text" class="form-control" name="task-user" id="search-user-input" placeholder="Type to search...">
+                            <ul id="search-user-results" class="list-group mb-3"></ul>
+                            <input type="hidden" id="userCreateTask">
+                        </div>
+                        <div class="mb-3">
+                            <label for="search-project-input" class="form-label">Search Project</label>
+                            <input type="text" class="form-control" name="task-project" id="search-project-input" placeholder="Type to search...">
+                            <ul id="search-project-results" class="list-group mb-3"></ul>
+                            <input type="hidden" id="projectCreateTask">
+                        </div>
+                        <div class="mb-3">
+                            <label for="task-due" class="form-label">Due Date</label>
+                            <input type="date" class="form-control" id="task-due" name="task-due" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="create-common-task">Create</button>
+                </div>
             </div>
         </div>
     </div>

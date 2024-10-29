@@ -50,6 +50,30 @@ class Task(models.Model):
             f"Due Date: {self.due.strftime('%Y-%m-%d') if self.due else 'No due date'}"
         )
 
+class PersonalTask(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=64)
+    description = models.TextField()
+    assigned_to = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    status = models.CharField(max_length=10, default="TODO")
+    correction = models.TextField(null=True)
+    discussion = models.TextField(null=True)
+    reason = models.TextField(null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    started = models.DateTimeField(null=True)
+    updated = models.DateTimeField(auto_now=True)
+    due = models.DateField(null=True)
+
+    def __str__(self):
+        return (
+            f"Task: {self.name}\n"
+            f"Created: {self.created.strftime('%Y-%m-%d %H:%M')}\n"
+            f"Started: {self.started.strftime('%Y-%m-%d %H:%M') if self.started else 'Not started'}\n"
+            f"Updated: {self.updated.strftime('%Y-%m-%d %H:%M')}\n"
+            f"Due Date: {self.due.strftime('%Y-%m-%d') if self.due else 'No due date'}"
+        )
+
 class Assignment(models.Model):
     id = models.AutoField(primary_key=True)
     peer = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -65,9 +89,12 @@ class MailServer(models.Model):
 
 class Permisison(models.Model):
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     permission = models.CharField(max_length=64)
-    granted = models.BooleanField(default=False)
+    reason = models.TextField(null=True)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    access = models.BooleanField(default=False)
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

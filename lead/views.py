@@ -77,6 +77,35 @@ def create_task(request):
     return render(request, 'lead/create_task.html')
 
 @group_required(const.LEAD)
+def create_common_task(request):
+    task_name = request.POST.get('task_name')
+    task_description = request.POST.get('task_description')
+    task_user = request.POST.get('task_user', None)
+    task_project = request.POST.get('task_project', None)
+    if task_user:
+        task_user = app_models.User.objects.get(username=task_user)
+    if task_project:
+        task_project = app_models.Project.objects.get(id=task_project)
+    task_due = request.POST.get('task_due')
+    task = {
+        'name': task_name,
+        'description': task_description,
+        'due': task_due,
+    }
+    message = 'Task Created Successfully'
+    if task_user:
+        task['assigned_to'] = task_user
+        message = 'Task Created and Assigned Successfully'
+    if task_project:
+        task['project'] = task_project
+    if task.get('project'):
+        app_models.Task.objects.create(**task)
+    else:
+        app_models.PersonalTask.objects.create(**task)
+    messages.success(request, message)
+    return JsonResponse({'redirect': request.get_full_path()})
+
+@group_required(const.LEAD)
 def view_projects(request):
     return render(request, 'lead/list_projects.html')
 
@@ -110,6 +139,41 @@ def view_tasks(request):
             tasks_dict.append(task)
         return JsonResponse({'tasks': tasks_dict})
     return render(request, 'lead/view_tasks.html')
+
+@group_required(const.LEAD)
+def personal_tasks(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        personal_tasks = []
+        project_tasks = []
+        project = app_models.Task.objects.all()
+        personal = app_models.PersonalTask.objects.all()
+        for task in project:
+            project = user = None
+            if task.project:
+                project = task.project.name
+            if task.assigned_to:
+                user = task.assigned_to.username
+            task = util.as_dict(task)
+            if project:
+                task["project"] = project
+            if user:
+                task["user"] = user
+            project_tasks.append(task)
+
+        for task in personal:
+            project = user = None
+            if task.project:
+                project = task.project.name
+            if task.assigned_to:
+                user = task.assigned_to.username
+            task = util.as_dict(task)
+            if project:
+                task["project"] = project
+            if user:
+                task["user"] = user
+            personal_tasks.append(task)
+        return JsonResponse({"personal_tasks": personal_tasks, "project_tasks": project_tasks})
+    return render(request, "lead/personal_tasks.html")
 
 @group_required(const.LEAD)
 def view_members(request):
@@ -271,3 +335,36 @@ def search_manager(request):
     managers = User.objects.filter(username__icontains=query, groups__name=const.MANAGER, is_active=True)[:5]
     managers_list = [{'id': user.id, 'username': user.username} for user in managers]
     return JsonResponse({'managers': managers_list})
+
+def get_all_tasks_table(request):
+    table = request.POST.get('table')
+    tasks = []
+    if table == 'table-personal':
+        personal = app_models.PersonalTask.objects.all()
+        for task in personal:
+            project = assigned = None
+            if task.project:
+                project = task.project.name
+            if task.assigned_to:
+                assigned = task.assigned_to.username
+            task = util.as_dict(task)
+            if project:
+                task["project"] = project
+            if assigned:
+                task["assigned"] = assigned
+            tasks.append(task)
+    else:
+        project = app_models.Task.objects.all()
+        for task in project:
+            project = assigned = None
+            if task.project:
+                project = task.project.name
+            if task.assigned_to:
+                assigned = task.assigned_to.username
+            task = util.as_dict(task)
+            if project:
+                task["project"] = project
+            if assigned:
+                task["assigned"] = assigned
+            tasks.append(task)
+    return JsonResponse({"tasks": tasks})

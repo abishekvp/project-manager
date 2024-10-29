@@ -65,62 +65,6 @@ function get_projects() {
     });
 };
 
-// function get_tasks(id) {
-//     $.ajax({
-//         type: "GET",
-//         url: `/get-task-list`, // Assuming your backend supports this URL pattern
-//         success: function (response) {
-//             const tasksTableBody = $(".tasks_table_data"); // Assuming you have a table body with this class
-//             tasksTableBody.empty(); // Clear any existing tasks
-
-//             // Loop through the tasks and append them to the table
-//             response.tasks.forEach((task, index) => {
-//                 let taskActions;
-//                 if (task.assigned) {
-//                     taskActions = `
-//                         <i class="fas fa-trash-alt text-danger me-3 px-1" onclick="delete_task(${id}, ${task.id})" style="cursor: pointer;" title="Delete"></i>
-//                         <span class="text-success">${task.assigned}</span>
-//                         <i class="fas fa-user-slash text-warning ms-2" onclick="remove_assigned_peer(${task.id})" style="cursor: pointer;" title="Remove User"></i>
-//                     `;
-//                 } else {
-//                     taskActions = `
-//                         <i class="fas fa-trash-alt text-danger me-3 px-1" onclick="delete_task(${id}, ${task.id})" style="cursor: pointer;" title="Delete"></i>
-//                         <i class="fa-solid fa-user text-primary me-3 px-1" onclick="open_assign_task_form(${task.id})" style="cursor: pointer;" title="Assign"></i>
-//                     `;
-//                 }
-
-//                 // Create a select element for task status with dynamic class
-//                 const statusOptions = `
-//                     <select onchange="updateTaskStatus(${task.id}, this.value)" class="form-select task-status" id="${task.id}" style="${TASK_STATUS_COLORS[task.status]}">
-//                         <option value="TODO" ${task.status === 'TODO' ? 'selected' : ''}>TODO</option>
-//                         <option value="IN-PROGRESS" ${task.status === 'IN-PROGRESS' ? 'selected' : ''}>IN PROGRESS</option>
-//                         <option value="VERIFY" ${task.status === 'VERIFY' ? 'selected' : ''}>VERIFY</option>
-//                         <option value="CORRECTION" ${task.status === 'CORRECTION' ? 'selected' : ''}>CORRECTION</option>
-//                         <option value="HOLD" ${task.status === 'HOLD' ? 'selected' : ''}>HOLD</option>
-//                         <option value="COMPLETE" ${task.status === 'COMPLETE' ? 'selected' : ''}>COMPLETE</option>
-//                     </select>
-//                 `;
-
-//                 tasksTableBody.append(
-//                     `<tr>
-//                         <td>${task.id}</td>
-//                         <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_details('${task.id}')" style="cursor: pointer;" title="Description"></i></td>
-//                         <td>${task.created}</td>
-//                         <td>${task.started}</td>
-//                         <td>${task.updated}</td>
-//                         <td>${task.due}</td>
-//                         <td>${statusOptions}</td>
-//                         <td>${taskActions}</td>
-//                     </tr>`
-//                 );
-//             });
-//         },
-//         error: function (error) {
-//             console.error("Error fetching tasks:", error);
-//         }
-//     });
-// }
-
 // Function to remove the assigned user
 function remove_assigned_peer(taskid) {
     $('#confirmRemoveAssigned').modal('show');
@@ -151,6 +95,7 @@ function delete_project(id) {
                 csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
             },
             success: function (response) {
+                $('#confirmDeleteProject').modal('hide');
                 window.location.href = "/lead/projects";
             },
         });
@@ -175,6 +120,7 @@ function view_task_details(taskid) {
             var myModal = new bootstrap.Modal(document.getElementById('detailTaskModal'));
             myModal.show();
             $('#detailTaskModalName').text(response.task.name);
+            $('#edit-task-btn').attr('id', response.task.id);
             $('#detailTaskModalDescription').html(convertUrlsToLinks(response.task.description));
             $('#detailTaskModalProject').text(response.task.project);
             $('#detailTaskModalAssigned').text(response.task.assigned);
@@ -211,6 +157,70 @@ function view_project(id) {
             window.location.href = response.url;
         },
     });
+}
+
+$('#search-project-input').on('keyup', function() {
+    const query = $(this).val();
+    if (query.length > 2) {  // Trigger search when input has more than 2 characters
+        $.ajax({
+            type: "GET",
+            url: `/search-projects/`,
+            data: { query: query },
+            success: function (response) {
+                const searchResults = $('#search-project-results');
+                searchResults.empty();  // Clear previous search results
+
+                response.projects.forEach(project => {
+                    searchResults.append(
+                        `<li class="list-group-item" id="${project.id}" onclick="selectProjectForCreateTask(${project.id}, '${project.name}')">
+                            ${project.name}
+                        </li>`
+                    );
+                });
+            },
+            error: function (error) {
+                console.error("Error searching users:", error);
+            }
+        });
+    }
+})
+
+function selectProjectForCreateTask(project_id, project_name){
+    $('#projectCreateTask').val(project_id);
+    $('#search-project-input').val(project_name);
+    $('#search-project-results').empty();
+}
+
+$('#search-user-input').on('keyup', function() {
+    const query = $(this).val();
+    if (query.length > 2) {  // Trigger search when input has more than 2 characters
+        $.ajax({
+            type: "GET",
+            url: `/search-users/`,
+            data: { query: query },
+            success: function (response) {
+                const searchResults = $('#search-user-results');
+                searchResults.empty();  // Clear previous search results
+
+                response.users.forEach(user => {
+                    searchResults.append(
+                        `<li class="list-group-item" onclick="selectUserForCreateTask(${user.id}, '${user.username}')">
+                            ${user.username}
+                        </li>`
+                    );
+                });
+            },
+            error: function (error) {
+                console.error("Error searching users:", error);
+            }
+        });
+    }
+})
+
+function selectUserForCreateTask(userid, username){
+    $('#userCreateTask').val(userid);
+    $('#search-user-input').val(username);
+    $('#search-user-results').empty();
 }
 
 $('#user-search-input').on('keyup', function() {

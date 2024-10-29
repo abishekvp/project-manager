@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from constants import constants as const
 from django.http import JsonResponse
 from django.contrib import messages
-from .models import Project, Task, Profile
+from .models import Project, Task, Profile, PersonalTask
 from utils import utility
 from .mail_server import MailServer
 # abiraj asrif420
@@ -169,9 +169,16 @@ def get_project_tasks(request):
 @login_required(login_url='/signin')
 def search_users(request):
     query = request.GET.get('query', '')
-    users = User.objects.filter(username__icontains=query, is_active=True, is_staff=False, is_superuser=False).exclude(groups__name=const.LEAD)[:5]
+    users = User.objects.filter(username__icontains=query, is_active=True, is_superuser=False).exclude(groups__name=const.LEAD)[:5]
     users_list = [{'id': user.id, 'username': user.username} for user in users]
     return JsonResponse({'users': users_list})
+
+@login_required(login_url='/signin')
+def search_projects(request):
+    query = request.GET.get('query', '')
+    projects = Project.objects.filter(name__icontains=query)
+    projects_list = [{'id': project.id, 'name': project.name} for project in projects]
+    return JsonResponse({'projects': projects_list})
 
 @login_required(login_url='/signin')
 def update_task_status(request):
@@ -232,7 +239,11 @@ def view_project(request):
 
 def task_detail(request):
     taskid = request.GET.get('taskid', '')
-    task = Task.objects.get(id=taskid)
+    assigned = project = None
+    if Task.objects.filter(id=taskid).exists():
+        task = Task.objects.get(id=taskid)
+    else:
+        task = PersonalTask.objects.get(id=taskid)
     if task.project:
         project = task.project.name
     if task.assigned_to:
@@ -240,8 +251,10 @@ def task_detail(request):
     else:
         assigned = "Not Assigned"
     task = utility.as_dict(task)
-    task['assigned'] = assigned
-    task['project'] = project
+    if assigned:
+        task['assigned'] = assigned
+    if project:
+        task['project'] = project
     return JsonResponse({"task": task})
 
 def sort_tasks_by_status(request):
@@ -260,9 +273,15 @@ def sort_tasks_by_status(request):
         status = const.TASK_COMPLETE
 
     if status == const.TASK_ALL:
-        tasks = Task.objects.all()
+        if request.session.get("table-personal"):
+            tasks = PersonalTask.objects.all()
+        else:
+            tasks = Task.objects.all()
     else:
-        tasks = Task.objects.filter(status=status)
+        if request.session.get("table-personal"):
+            tasks = PersonalTask.objects.filter(status=status)
+        else:
+            tasks = Task.objects.filter(status=status)
     if not tasks:
         return JsonResponse({"tasks": [], "status": 400})
     tasks_dict = []
@@ -291,6 +310,26 @@ def delete_task(request):
     projectid = task.project.id
     task.delete()
     return JsonResponse({"projectid": projectid})
+
+@group_required(const.LEAD, const.MANAGER)
+def update_task(request):
+    taskid = request.POST.get("taskid")
+    if Task.objects.filter(id=taskid).exists():
+        task = Task.objects.get(id=taskid)
+    elif PersonalTask.objects.filter(id=taskid).exists():
+        task = PersonalTask.objects.get(id=taskid)
+    else:
+        messages.error(request, 'Task not found')
+        return JsonResponse({"redirect": request.get_full_path()})
+    task.name = request.POST.get("name")
+    task.description = request.POST.get("description")
+    task.pull_request = request.POST.get("pull_request")
+    task.correction = request.POST.get("correction")
+    task.hold = request.POST.get("hold")
+    task.due = request.POST.get("due")
+    task.save()
+    messages.success(request, 'Task updated successfully')
+    return JsonResponse({"redirect": request.get_full_path()})
 
 @group_required(const.LEAD, const.MANAGER)
 def remove_assigned_peer(request):

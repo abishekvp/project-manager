@@ -7,7 +7,8 @@ urlpatterns = [
     path('signup', views.signup,name="signup"),
     path('signin/', views.signin,name="signin"),
     path('signout/', views.signout,name="signout"),
-    path('search-users/', views.search_users, name='search_users'),
+    path('search-users/', views.search_users, name='search-users'),
+    path('search-projects/', views.search_projects, name='search-projects'),
     path('get-peers', views.get_peers, name="get-peers"),
     path('get-projects', views.get_projects, name="get-projects"),
     path('get-tasks/<int:projectid>/', views.get_tasks, name="get-tasks"),
@@ -27,4 +28,5 @@ urlpatterns = [
     path('delete-task', views.delete_task, name='delete-task'),
     path('remove-assigned-peer', views.remove_assigned_peer, name='remove-assigned-peer'),
     path('change-project-status', views.change_project_status, name='change-project-status'),
+    path('update-task', views.update_task, name='update-task'),
 ]

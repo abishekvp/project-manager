@@ -5,9 +5,8 @@ function load_tasks_with_actions(tasks){
         let taskActions;
         if (task.assigned) {
             taskActions = `
-                <i class="fas fa-trash-alt text-danger me-3 px-1" onclick="delete_task(${task.id})" style="cursor: pointer;" title="Delete"></i>
-                <span class="text-success">${task.assigned}</span>
-                <i class="fas fa-user-slash text-warning ms-2" onclick="remove_assigned_peer(${task.id})" style="cursor: pointer;" title="Remove User"></i>
+                <i class="fas fa-user-slash text-warning ms-1" onclick="remove_assigned_peer(${task.id})" style="cursor: pointer;" title="Remove User"></i>
+                <span class="text-success ms-2">${task.assigned}</span>
             `;
         } else {
             taskActions = `
@@ -75,17 +74,6 @@ function load_tasks_for_view(tasks){
     const tasksTableBody = $(".tasks_table_data");
     $(tasksTableBody).empty();
     tasks.forEach((task, index) => {
-        const statusOptions = `
-            <select onchange="update_task_status('${encodeURIComponent(JSON.stringify(task))}', this.value)" class="form-select task-status" id="${task.id}" style="${TASK_STATUS_COLORS[task.status]}">
-                <option value="TODO" ${task.status === 'TODO' ? 'selected' : ''}>TODO</option>
-                <option value="IN-PROGRESS" ${task.status === 'IN-PROGRESS' ? 'selected' : ''}>IN PROGRESS</option>
-                <option value="VERIFY" ${task.status === 'VERIFY' ? 'selected' : ''}>VERIFY</option>
-                <option value="CORRECTION" ${task.status === 'CORRECTION' ? 'selected' : ''}>CORRECTION</option>
-                <option value="HOLD" ${task.status === 'HOLD' ? 'selected' : ''}>HOLD</option>
-                <option value="COMPLETE" ${task.status === 'COMPLETE' ? 'selected' : ''}>COMPLETE</option>
-            </select>
-        `;
-
         tasksTableBody.append(
             `<tr>
                 <td>${task.id}</td>
@@ -142,8 +130,7 @@ function assign_task() {
 }
 
 function remove_assigned_peer(taskid) {
-    alert(taskid)
-    $('#confirmRemoveAssigned').modal('show');
+    $('#confirmRemoveAssigned').modal('show');    
     $("#confirmRemoveAssignedBtn").click(function(){
         $.ajax({
             type: "POST",
@@ -160,21 +147,88 @@ function remove_assigned_peer(taskid) {
     })
 }
 
-function delete_task(taskid){
-    $.ajax({
-        url: '/delete-task',
-        type: 'POST',
-        data: {
-            taskid: taskid,
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-        },
-        success: function(response){
-            reload_project_task(response.projectid);
-        },
-        error: function(error){
-            console.log(error);
-        }
-    });
+function create_common_task(){
+    $('#createTaskModal').modal('show');
+    $('#create-common-task').click(function(){
+        var task_name = $('#createTaskModalForm input[name="task-name"]').val()
+        var task_description = $('#createTaskModalForm textarea[name="task-description"]').val()
+        var task_user = $('#createTaskModalForm input[name="task-user"]').val()
+        var task_due = $('#createTaskModalForm input[name="task-due"]').val()
+        $.ajax({
+            type: "POST",
+            url: `/lead/create-common-task`,
+            data: {
+                task_name: task_name,
+                task_description: task_description,
+                task_user: task_user,
+                task_project: $('#projectCreateTask').val(),
+                task_due: task_due,
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            },
+            success: function (response) {
+                $('#createTaskModal').modal('hide');
+                window.location.replace(response.redirect)
+            },
+        });
+    })
+}
+
+function delete_task(taskid) {
+    $('#confirmDeleteProject').modal('show');
+    $("#confirmDeleteProjectBtn").click(function(){
+        $.ajax({
+            url: '/delete-task',
+            type: 'POST',
+            data: {
+                taskid: taskid,
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            },
+            success: function(response){
+                $('#confirmDeleteProject').modal('hide');
+                reload_project_task(response.projectid);
+            },
+        });
+    })
+}
+
+function edit_task(taskid) {
+    $('#detailTaskModal').modal('show');
+    $('#detailTaskModal').modal('hide');
+    $('#detailTaskModalEditName').val($('#detailTaskModalName').text())
+    $('#detailTaskModalEditDescription').val($('#detailTaskModalDescription').html())
+    $('#detailTaskModalEditProject').text($('#detailTaskModalProject').text())
+    $('#detailTaskModalEditAssigned').text($('#detailTaskModalAssigned').text())
+    $('#detailTaskModalEditStatus').text($('#detailTaskModalStatus').text())
+    $('#detailTaskModalEditDue').val($('#detailTaskModalDue').text())
+    $('#detailTaskModalEditPullRequest').val($('#detailTaskModalPullRequest').html())
+    $('#detailTaskModalEditCorrection').val($('#detailTaskModalCorrection').html())
+    $('#detailTaskModalEditHold').val($('#detailTaskModalHold').html())
+    $('#detailTaskModalEditCreated').text($('#detailTaskModalCreated').text())
+    $('#detailTaskModalEditStarted').text($('#detailTaskModalStarted').text())
+    $('#detailTaskModalEditUpdated').text($('#detailTaskModalUpdated').text())
+    $('#detailTaskModalEdit').modal('show');
+    $('#edit-task-btn').click(function(){
+        $.ajax({
+            url: '/update-task',
+            type: 'POST',
+            data: {
+                taskid: taskid,
+                name: $('#detailTaskModalEditName').val(),
+                description: $('#detailTaskModalEditDescription').val(),
+                due: $('#detailTaskModalEditDue').val(),
+                pull_request: $('#detailTaskModalEditPullRequest').val(),
+                correction: $('#detailTaskModalEditCorrection').val(),
+                hold: $('#detailTaskModalEditHold').val(),
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            },
+            success: function(response){
+                $('#detailTaskModalEdit').modal('hide');
+                if(response.redirect){
+                    window.location.reload()
+                }
+            },
+        });
+    })
 }
 
 function update_task_status(task, newStatus){
@@ -274,6 +328,27 @@ function sortTaskByStatus(status){
         url: `/sort-tasks-by-status`,
         data: {
             status: status,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function (response) {
+            load_tasks_for_view(response.tasks);
+        },
+    });
+}
+
+function switch_task_table(table, hide_table){
+    $("#" + hide_table).removeClass("active");
+    $("#" + table).addClass("active");
+    if(table == "table-personal"){
+        window.localStorage.setItem("table-personal", true)
+    }else{
+        window.localStorage.setItem("table-personal", false)
+    }
+    $.ajax({
+        type: "POST",
+        url: `/lead/get-all-tasks-table`,
+        data: {
+            table: table,
             csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
         },
         success: function (response) {
