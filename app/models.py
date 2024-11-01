@@ -13,19 +13,6 @@ class Project(models.Model):
     updated = models.DateTimeField(auto_now=True)
     due = models.DateField(null=True)
 
-    def __str__(self):
-        return (
-            f"Project: {self.name}\n"
-            f"Description: {self.description}\n"
-            f"Lead: {self.manager.username if self.manager else 'No manager assigned'}\n"
-            f"Client: {self.client_name}\n"
-            f"Status: {self.status}\n"
-            f"Start Date: {self.started.strftime('%Y-%m-%d')}\n"
-            f"Created At: {self.created.strftime('%Y-%m-%d %H:%M')}"
-            f"Updated: {self.updated.strftime('%Y-%m-%d %H:%M')}"
-            f"Due Date: {self.due.strftime('%Y-%m-%d')}\n"
-        )
-
 class Task(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64)
@@ -41,38 +28,6 @@ class Task(models.Model):
     updated = models.DateTimeField(auto_now=True)
     due = models.DateField(null=True)
 
-    def __str__(self):
-        return (
-            f"Task: {self.name}\n"
-            f"Created: {self.created.strftime('%Y-%m-%d %H:%M')}\n"
-            f"Started: {self.started.strftime('%Y-%m-%d %H:%M') if self.started else 'Not started'}\n"
-            f"Updated: {self.updated.strftime('%Y-%m-%d %H:%M')}\n"
-            f"Due Date: {self.due.strftime('%Y-%m-%d') if self.due else 'No due date'}"
-        )
-
-class PersonalTask(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=64)
-    description = models.TextField()
-    assigned_to = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
-    status = models.CharField(max_length=10, default="TODO")
-    correction = models.TextField(null=True)
-    discussion = models.TextField(null=True)
-    reason = models.TextField(null=True)
-    created = models.DateTimeField(auto_now_add=True)
-    started = models.DateTimeField(null=True)
-    updated = models.DateTimeField(auto_now=True)
-    due = models.DateField(null=True)
-
-    def __str__(self):
-        return (
-            f"Task: {self.name}\n"
-            f"Created: {self.created.strftime('%Y-%m-%d %H:%M')}\n"
-            f"Started: {self.started.strftime('%Y-%m-%d %H:%M') if self.started else 'Not started'}\n"
-            f"Updated: {self.updated.strftime('%Y-%m-%d %H:%M')}\n"
-            f"Due Date: {self.due.strftime('%Y-%m-%d') if self.due else 'No due date'}"
-        )
 
 class Assignment(models.Model):
     id = models.AutoField(primary_key=True)

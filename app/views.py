@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from constants import constants as const
 from django.http import JsonResponse
 from django.contrib import messages
-from .models import Project, Task, Profile, PersonalTask
+from .models import Project, Task, Profile
 from utils import utility
 from .mail_server import MailServer
 # abiraj asrif420
@@ -77,6 +77,7 @@ def signin(request):
         else: filter_dict['username'] = username
         user = User.objects.filter(**filter_dict).first()
         if user and not user.is_superuser:
+            username = user.username
             if not user.is_active: messages.error(request, 'User needs to be approved')
             elif authenticate(request, username=username, password=password):
                 login(request, user)
@@ -243,7 +244,7 @@ def task_detail(request):
     if Task.objects.filter(id=taskid).exists():
         task = Task.objects.get(id=taskid)
     else:
-        task = PersonalTask.objects.get(id=taskid)
+        task = Task.objects.get(id=taskid, assigned_to__username=request.user)
     if task.project:
         project = task.project.name
     if task.assigned_to:

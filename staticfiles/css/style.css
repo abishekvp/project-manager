@@ -1,0 +1,44 @@
+body {
+  background-color: #343a40;
+}
+
+.nav-link {
+  transition: background-color 0.3s;
+  padding: 0;
+  margin: 10px;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+  background-color: #007bff;
+  color: white;
+}
+
+option {
+  background: white;
+  color: black;
+}
+
+.bg-brown-red{
+  background-color: red;
+  color: white;
+}
+
+.detailTaskModal .form-control{
+  height: fit-content;
+  width: 100%;
+}
+
+.detailTaskModal .modal-body{
+  overflow-y: scroll;
+  max-height: 500px;
+}
+
+.task-status-badge{
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 5px;
+}
