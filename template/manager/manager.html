@@ -1,6 +1,8 @@
 {% extends 'dashboard.html' %}
+{% load static %}
 {% block title %}Manager{% endblock title %}
 {% block dashboard %}
     {% block manager_board %}
     {% endblock %}
+    <script src="{% static 'js/manager.js' %}"></script>
 {% endblock %}

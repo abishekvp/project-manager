@@ -141,41 +141,6 @@ def view_tasks(request):
     return render(request, 'lead/view_tasks.html')
 
 @group_required(const.LEAD)
-def personal_tasks(request):
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        personal_tasks = []
-        project_tasks = []
-        project = app_models.Task.objects.all()
-        personal = app_models.PersonalTask.objects.all()
-        for task in project:
-            project = user = None
-            if task.project:
-                project = task.project.name
-            if task.assigned_to:
-                user = task.assigned_to.username
-            task = util.as_dict(task)
-            if project:
-                task["project"] = project
-            if user:
-                task["user"] = user
-            project_tasks.append(task)
-
-        for task in personal:
-            project = user = None
-            if task.project:
-                project = task.project.name
-            if task.assigned_to:
-                user = task.assigned_to.username
-            task = util.as_dict(task)
-            if project:
-                task["project"] = project
-            if user:
-                task["user"] = user
-            personal_tasks.append(task)
-        return JsonResponse({"personal_tasks": personal_tasks, "project_tasks": project_tasks})
-    return render(request, "lead/personal_tasks.html")
-
-@group_required(const.LEAD)
 def view_members(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         peers = User.objects.filter(groups__name=const.PEER, is_active=True)
@@ -337,34 +302,12 @@ def search_manager(request):
     return JsonResponse({'managers': managers_list})
 
 def get_all_tasks_table(request):
-    table = request.POST.get('table')
-    tasks = []
-    if table == 'table-personal':
-        personal = app_models.PersonalTask.objects.all()
-        for task in personal:
-            project = assigned = None
-            if task.project:
-                project = task.project.name
-            if task.assigned_to:
-                assigned = task.assigned_to.username
-            task = util.as_dict(task)
-            if project:
-                task["project"] = project
-            if assigned:
-                task["assigned"] = assigned
-            tasks.append(task)
-    else:
-        project = app_models.Task.objects.all()
-        for task in project:
-            project = assigned = None
-            if task.project:
-                project = task.project.name
-            if task.assigned_to:
-                assigned = task.assigned_to.username
-            task = util.as_dict(task)
-            if project:
-                task["project"] = project
-            if assigned:
-                task["assigned"] = assigned
-            tasks.append(task)
+    tasks = app_models.Task.objects.all()
+    for task in tasks:
+        task_dict = util.as_dict(task)
+        if task.project:
+            task_dict["project"] = task.project.name
+        if task.assigned_to:
+            task_dict["assigned"] = task.assigned_to.username
+        tasks.append(task_dict)
     return JsonResponse({"tasks": tasks})

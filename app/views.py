@@ -73,7 +73,7 @@ def signin(request):
         password = request.POST["password"]
         filter_dict = {}
         if '@' and '.' in username:
-            username['email'] = username
+            filter_dict['email'] = username
         else: filter_dict['username'] = username
         user = User.objects.filter(**filter_dict).first()
         if user and not user.is_superuser:
@@ -170,7 +170,7 @@ def get_project_tasks(request):
 @login_required(login_url='/signin')
 def search_users(request):
     query = request.GET.get('query', '')
-    users = User.objects.filter(username__icontains=query, is_active=True, is_superuser=False).exclude(groups__name=const.LEAD)[:5]
+    users = User.objects.filter(username__icontains=query, is_active=True, is_superuser=False)[:5]
     users_list = [{'id': user.id, 'username': user.username} for user in users]
     return JsonResponse({'users': users_list})
 
@@ -241,10 +241,7 @@ def view_project(request):
 def task_detail(request):
     taskid = request.GET.get('taskid', '')
     assigned = project = None
-    if Task.objects.filter(id=taskid).exists():
-        task = Task.objects.get(id=taskid)
-    else:
-        task = Task.objects.get(id=taskid, assigned_to__username=request.user)
+    task = Task.objects.get(id=taskid)
     if task.project:
         project = task.project.name
     if task.assigned_to:
@@ -260,29 +257,17 @@ def task_detail(request):
 
 def sort_tasks_by_status(request):
     status = str(request.POST.get("status")).upper()
-    if status == const.TASK_TODO:
-        status = const.TASK_TODO
-    elif status == const.TASK_PROGRESS:
-        status = const.TASK_PROGRESS
-    elif status == const.TASK_VERIFY:
-        status = const.TASK_VERIFY
-    elif status == const.TASK_CORRECTION:
-        status = const.TASK_CORRECTION
-    elif status == const.TASK_HOLD:
-        status = const.TASK_HOLD
-    elif status == const.TASK_COMPLETE:
-        status = const.TASK_COMPLETE
-
-    if status == const.TASK_ALL:
-        if request.session.get("table-personal"):
-            tasks = PersonalTask.objects.all()
-        else:
-            tasks = Task.objects.all()
-    else:
-        if request.session.get("table-personal"):
-            tasks = PersonalTask.objects.filter(status=status)
-        else:
-            tasks = Task.objects.filter(status=status)
+    personal = request.POST.get("table")
+    personal = True if personal == "table-personal" else False
+    request.session["personal_task"] = False
+    if personal:
+        request.session["personal_task"] = True
+    filter_dict = dict()
+    if personal:
+        filter_dict["assigned_to__username"] = request.user
+    if status != const.TASK_ALL:
+        filter_dict["status"] = status
+    tasks = Task.objects.filter(**filter_dict)
     if not tasks:
         return JsonResponse({"tasks": [], "status": 400})
     tasks_dict = []
@@ -315,13 +300,7 @@ def delete_task(request):
 @group_required(const.LEAD, const.MANAGER)
 def update_task(request):
     taskid = request.POST.get("taskid")
-    if Task.objects.filter(id=taskid).exists():
-        task = Task.objects.get(id=taskid)
-    elif PersonalTask.objects.filter(id=taskid).exists():
-        task = PersonalTask.objects.get(id=taskid)
-    else:
-        messages.error(request, 'Task not found')
-        return JsonResponse({"redirect": request.get_full_path()})
+    task = Task.objects.get(id=taskid)
     task.name = request.POST.get("name")
     task.description = request.POST.get("description")
     task.pull_request = request.POST.get("pull_request")

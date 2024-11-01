@@ -1,11 +1,9 @@
 {% extends 'lead/dashboard.html' %}
+{% load static %}
 {% block title %}Lead Dashboard{% endblock title %}
 {% block lead_board %}
-
 <div class="container mt-4" style="overflow-x: hidden;">
     <h1 class="text-white">Lead Dashboard</h1>
-    
-    <!-- Project and Task Stats -->
     <div class="row justify-content-around">
         <div class="col-md-3">
             <div class="card text-black bg-light mb-3">
@@ -106,5 +104,5 @@
         </table>
     </div>
 </div>
-
+<script src="{% static 'js/lead.js' %}"></script>
 {% endblock %}

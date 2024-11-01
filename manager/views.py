@@ -1,3 +1,4 @@
+from django.db.models import Q
 from app.decorators import group_required
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -104,11 +105,16 @@ def remove_assigned_peer(request):
 def view_tasks(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         projects = app_models.Project.objects.filter(manager=request.user)
-        tasks = app_models.Task.objects.filter(project__in=projects)
+        tasks = app_models.Task.objects.filter(
+            Q(project__in=projects) | Q(assigned_to__username=request.user)
+        )
         tasks_dict = []
         for task in tasks:
-            project_name = task.project.name
-            assigned = task.assigned_to.username if task.assigned_to else '  ---  '
+            project_name = assigned = None
+            if task.project:
+                project_name = task.project.name
+            if task.assigned_to:
+                assigned = task.assigned_to.username
             task = util.as_dict(task)
             task['project'] = project_name
             task['assigned'] = assigned

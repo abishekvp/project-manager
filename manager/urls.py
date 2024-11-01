@@ -12,4 +12,5 @@ urlpatterns = [
     path('remove-assigned-peer', views.remove_assigned_peer, name='manager-remove-assigned-peer'),
     path('view-tasks', views.view_tasks, name='manager-view-tasks'),
     path('sort-tasks-by-status', views.sort_tasks_by_status, name='sort-tasks-by-status'),
+    
 ]

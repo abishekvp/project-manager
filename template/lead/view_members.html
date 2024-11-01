@@ -1,7 +1,27 @@
 {% extends 'lead/dashboard.html' %}
 {% block lead_board %}
 <div class="table-responsive">
-    <h2 class="text-white px-5">Inactive Users</h2>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <button class="nav-link btn btn-primary text-uppercase font-weight-bold py-2 px-md-4 active" onclick="create_common_task()">Create</button>
+                </li>
+            </ul>
+            <a class="nav-link p-3">
+                <select onchange="sort_user_by_role(this.value)" class="form-select task-status">
+                    <option value="ALL">ALL</option>
+                    <option value="PEER">PEER</option>
+                    <option value="MANAGER">MANAGER</option>
+                    <option value="LEAD">LEAD</option>
+                    <option value="INACTIVE">INACTIVE</option>
+                </select>
+            </a>
+            <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+            </form>
+        </div>
+    </nav>
     <table class="table table-striped table-bordered table-dark"> <!-- Added table-dark class -->
         <thead class="table-light">
             <tr>
@@ -12,59 +32,10 @@
                 <th>Action</th>
             </tr>
         </thead>
-        <tbody class="inactives_table_data">
-            <!-- Data will be populated here by JavaScript -->
+        <tbody class="users_table_data">
         </tbody>
     </table>
 </div>
-<div class="table-responsive">
-    <h2 class="text-center text-white px-5">Leads</h2>
-    <table class="table table-striped table-bordered table-dark"> <!-- Added table-dark class -->
-        <thead class="table-light">
-            <tr>
-                <th>USER-ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody class="leads_table_data">
-            <!-- Data will be populated here by JavaScript -->
-        </tbody>
-    </table>
-</div>
-<div class="table-responsive">
-    <h2 class="text-center text-white px-5">Managers</h2>
-    <table class="table table-striped table-bordered table-dark"> <!-- Added table-dark class -->
-        <thead class="table-light">
-            <tr>
-                <th>USER-ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody class="managers_table_data">
-            <!-- Data will be populated here by JavaScript -->
-        </tbody>
-    </table>
-</div>
-<div class="table-responsive">
-    <h2 class="text-center text-white px-5">Peers</h2>
-    <table class="table table-striped table-bordered table-dark"> <!-- Added table-dark class -->
-        <thead class="table-light">
-            <tr>
-                <th>USER-ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody class="peers_table_data">
-            <!-- Data will be populated here by JavaScript -->
-        </tbody>
-    </table>
-</div>  
 <script>
     window.onload = function() {
         load_members();
