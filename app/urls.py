@@ -9,7 +9,9 @@ urlpatterns = [
     path('signout/', views.signout,name="signout"),
     path('search-users/', views.search_users, name='search-users'),
     path('search-projects/', views.search_projects, name='search-projects'),
-    path('get-peers', views.get_peers, name="get-peers"),
+    path('create-task', views.create_task, name='create-task'),
+    
+    
     path('get-projects', views.get_projects, name="get-projects"),
     path('get-tasks/<int:projectid>/', views.get_tasks, name="get-tasks"),
     path('update-task-status', views.update_task_status, name='update-task-status'),

@@ -90,24 +90,6 @@ function load_tasks_for_view(tasks){
     });
 }
 
-function reload_project_task(projectid){
-    $.ajax({
-        url: '/get-project-tasks',
-        type: 'POST',
-        data: {
-            projectid: projectid,
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-        },
-        success: function(response){
-            if (response.role == "manager" || response.role == "lead"){
-                load_tasks_with_actions(response['tasks']);
-            }else{
-                load_tasks_without_actions(response['tasks']);
-            }
-        },
-    });
-}
-
 function reload_project_task_with_localstorage(){
     const projectid = window.localStorage.getItem('project_id');
     reload_project_task(projectid);
@@ -147,7 +129,7 @@ function remove_assigned_peer(taskid) {
     })
 }
 
-function create_common_task(){
+function create_task(){
     $('#createTaskModal').modal('show');
     $('#create-common-task').click(function(){
         var task_name = $('#createTaskModalForm input[name="task-name"]').val()
@@ -156,7 +138,7 @@ function create_common_task(){
         var task_due = $('#createTaskModalForm input[name="task-due"]').val()
         $.ajax({
             type: "POST",
-            url: `/lead/create-common-task`,
+            url: `/lead/create-task`,
             data: {
                 task_name: task_name,
                 task_description: task_description,
@@ -338,6 +320,116 @@ function sortTaskByStatus(status){
 
 
 // Members
-function sort_user_by_role(){
-    
+
+function load_members(members) {
+    $(".users_table_data").empty();
+    members.forEach((user, index) => {
+        let actions;
+        if (user.is_active) {
+            actions = `
+                <i class="fas fa-user-slash text-warning justify-content-center px-2" onclick="inactive_user(${user.id})" style="cursor: pointer;" title="Approve"></i>
+            `;
+        } else {
+            actions = `
+                <i class="fas fa-check-circle text-success px-1" onclick="approve_user(${user.id})" style="cursor: pointer;" title="Approve"></i>
+                <i class="fas fa-trash-alt text-danger px-1" onclick="delete_user(${user.id})" style="cursor: pointer;" title="Remove"></i>`
+        }
+        setTimeout(function () {
+            $(".users_table_data").append(`
+                <tr>
+                    <td>${user.id}</td>
+                    <td style="text-transform: capitalize;">${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td>${actions}</td>
+                </tr>
+            `);
+        }, index * 50);
+    });
+}
+
+function reload_members(){
+    $.ajax({
+        type: "GET",
+        url: "/lead/view-members",
+        success: function (response) {
+            load_members(response.members);
+        },
+    });
+}
+
+function sort_members(status){
+    $.ajax({
+        type: "GET",
+        url: `/lead/view-members`,
+        data: { status: status },
+        success: function (response) {
+            load_members(response.members);
+        },
+    });
+}
+
+function search_members(search){
+    $.ajax({
+        type: "GET",
+        url: `/lead/view-members`,
+        data: { search: search },
+        success: function (response) {
+            load_members(response.members);
+        },
+    });
+}
+
+function delete_user(id) {
+    confirm("Are you sure you want to delete this user?");
+    if (!confirm) {
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        url: `/lead/delete-member`,
+        data: {
+            userid: id,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function (response) {
+            if(response.status == 200){
+                reload_members()
+            }else{
+                window.location.reload()
+            }
+        },
+    });
+}
+
+function inactive_user(id) {
+    confirm("Are you sure you want to inactive this user?");
+    if (!confirm) {
+        return;
+    }
+    $.ajax({
+        type: "POST",
+        url: `/lead/inactive-user`,
+        data: {
+            userid: id,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function (response) {
+            reload_members()
+        },
+    });
+}
+
+function approve_user(id) {
+    $.ajax({
+        type: "POST",
+        url: `/lead/approve-user`,
+        data: {
+            userid: id,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function (response) {
+            reload_members()
+        },
+    });
 }

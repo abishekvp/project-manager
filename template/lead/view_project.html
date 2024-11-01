@@ -59,7 +59,7 @@
         <button class="btn btn-danger me-1" onclick="delete_project('{{ project.id }}')">
             <i class="fas fa-trash-alt"></i> Delete
         </button>
-        <button class="btn btn-success me-1" data-bs-toggle="modal" data-bs-target="#taskModal">
+        <button class="btn btn-success me-1" data-bs-toggle="modal" data-bs-target="#addTaskModal">
             <i class="fas fa-plus"></i> Add Task
         </button>
         <div class="row mb-1">
@@ -98,11 +98,11 @@
         </tbody>
     </table>
 </div>
-<div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
+<div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="taskModalLabel">Create Task</h5>
+                <h5 class="modal-title" id="addTaskModalLabel">Create Task</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -124,7 +124,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="create_task('{{ project.id }}')">Create Task</button>
+                <button type="button" class="btn btn-primary" onclick="add_task('{{ project.id }}')">Create Task</button>
             </div>
         </div>
     </div>

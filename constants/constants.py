@@ -6,11 +6,23 @@ TASK_STATUS = {
     'COMPLETE': 5
 }
 
+PROJECT_STATUS = {
+    'ACTIVE': 1,
+    'INACTIVE': 2,
+    'COMPLETED': 3,
+    'HOLD': 4,
+    'CANCELLED': 5,
+    'ALL': 6
+}
+
 ROLE = {
     'LEAD': 1,
     'MANAGER': 2,
     'PEER': 3,
 }
+
+INACTIVE = 'inactive'
+ALL = 'all'
 
 PEER = 'peer'
 LEAD = 'lead'

@@ -1,3 +1,5 @@
+from django.db.models import Q
+from django.db import IntegrityError
 from app.decorators import group_required
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User, Group
@@ -8,12 +10,13 @@ from utils import utility as util
 from app import mail_server
 from app import views as app_views
 from app import models as app_models
+import datetime
 
 @group_required(const.LEAD)
 def dashboard(request):
     if request.user.is_authenticated:
         request.session['user_role'] = app_views.get_role(request)
-        return render(request,'lead/lead.html', lead_dashboard(request))
+        return render(request,'lead/dashboard.html', lead_dashboard(request))
     else: return redirect('signin')
 
 def admin_dashboard(request):
@@ -21,6 +24,49 @@ def admin_dashboard(request):
         return render(request, 'lead/admin-dashboard.html')
     else:
         return redirect('/signout')
+
+@group_required(const.LEAD)
+def view_members(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        members = []
+        filter_query = Q()
+        status = request.GET.get('status', '').lower()
+        search = request.GET.get('search', '').lower()
+        if search:
+            filter_query = (
+                Q(username__icontains=search) |
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(email__icontains=search)
+            )
+        if status:
+            if status == const.INACTIVE:
+                filter_query &= Q(is_active=False)
+            elif status == const.LEAD:
+                filter_query &= Q(groups__name=const.LEAD)
+            elif status == const.MANAGER:
+                filter_query &= Q(groups__name=const.MANAGER)
+            elif status == const.PEER:
+                filter_query &= Q(groups__name=const.PEER)
+        users = User.objects.filter(filter_query).exclude(is_superuser=True)
+        for user in users:
+            user_dict = util.as_dict(user)
+            user_dict['role'] = user.groups.first().name
+            members.append(user_dict)
+        return JsonResponse({'members': members})
+    return render(request, 'lead/view_members.html')
+
+@group_required(const.LEAD)
+def delete_member(request):
+    user_id = request.POST.get('userid')
+    user = User.objects.filter(id=user_id).exclude(username="abi")
+    if user:
+        try:
+            user.delete()
+        except IntegrityError:
+            messages.error(request, 'User is assigned to some tasks or projects. Please reassign the work before deleting the user.')
+            return JsonResponse({'status': 403})
+    return JsonResponse({'status': 200})
 
 @group_required(const.LEAD)
 def create_project(request):
@@ -57,53 +103,25 @@ def remove_project_manager(request):
 def create_task(request):
     import datetime
     if request.method == 'POST':
-        task_name = request.POST['task-name']
-        task_description = request.POST['task-description']
-        projectid = request.POST['project_id']
-        due = request.POST['task-due']
-        project = app_models.Project.objects.filter(id=projectid).first()
+        task_name = request.POST.get('task_name')
+        task_description = request.POST.get('task_description')
+        task_user = request.POST.get('task_user')
+        task_project = request.POST.get('task_project')
+        task_due = request.POST.get('task_due')
+        project = app_models.Project.objects.get(id=task_project)
         task = app_models.Task.objects.create(
             name=task_name,
             description=task_description,
             project=project,
+            user=User.objects.get(id=task_user),
             status=const.TASK_TODO,
-            due=due
+            due=task_due
         )
         if not project.started:
-            import datetime
-            task.started = datetime.datetime.now()
+            project.started = datetime.datetime.now()
         project.save()
         return JsonResponse({'status': 200})
     return render(request, 'lead/create_task.html')
-
-@group_required(const.LEAD)
-def create_common_task(request):
-    task_name = request.POST.get('task_name')
-    task_description = request.POST.get('task_description')
-    task_user = request.POST.get('task_user', None)
-    task_project = request.POST.get('task_project', None)
-    if task_user:
-        task_user = app_models.User.objects.get(username=task_user)
-    if task_project:
-        task_project = app_models.Project.objects.get(id=task_project)
-    task_due = request.POST.get('task_due')
-    task = {
-        'name': task_name,
-        'description': task_description,
-        'due': task_due,
-    }
-    message = 'Task Created Successfully'
-    if task_user:
-        task['assigned_to'] = task_user
-        message = 'Task Created and Assigned Successfully'
-    if task_project:
-        task['project'] = task_project
-    if task.get('project'):
-        app_models.Task.objects.create(**task)
-    else:
-        app_models.PersonalTask.objects.create(**task)
-    messages.success(request, message)
-    return JsonResponse({'redirect': request.get_full_path()})
 
 @group_required(const.LEAD)
 def view_projects(request):
@@ -139,36 +157,6 @@ def view_tasks(request):
             tasks_dict.append(task)
         return JsonResponse({'tasks': tasks_dict})
     return render(request, 'lead/view_tasks.html')
-
-@group_required(const.LEAD)
-def view_members(request):
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        peers = User.objects.filter(groups__name=const.PEER, is_active=True)
-        leads = User.objects.filter(groups__name=const.LEAD, is_active=True)
-        managers = User.objects.filter(groups__name=const.MANAGER, is_active=True)
-        inactives = User.objects.filter(is_active=False)
-        leads_dict = []
-        managers_dict = []
-        peers_dict = []
-        inactives_dict = []
-        for lead in leads:
-            lead = util.as_dict(lead)
-            leads_dict.append(lead)
-        for manager in managers:
-            manager = util.as_dict(manager)
-            managers_dict.append(manager)
-        for peer in peers:
-            peer = util.as_dict(peer)
-            peers_dict.append(peer)
-        for inactive in inactives:
-            role = app_models.Profile.objects.filter(user=inactive).first()
-            if role:
-                role = role.role
-            inactive = util.as_dict(inactive)
-            inactive['role'] = role
-            inactives_dict.append(inactive)
-        return JsonResponse({'inactives': inactives_dict, 'leads': leads_dict, 'managers': managers_dict, 'peers': peers_dict})
-    return render(request, 'lead/view_members.html')
 
 @group_required(const.LEAD)
 def lead_dashboard(request):
@@ -266,14 +254,7 @@ def test_mail_server(request):
         return JsonResponse({'status': 200, 'message': 'Mail sent successfully.'})
     else:
         return JsonResponse({'status': 500, 'message': 'Failed to configure mail server.'})
-    
-@group_required(const.LEAD)
-def delete_user(request):
-    user_id = request.POST.get('userid')
-    lead = User.objects.filter(id=request.user.id).first()
-    if lead:
-        User.objects.filter(id=user_id).delete()
-    return JsonResponse({'status': 200})
+
 
 @group_required(const.LEAD)
 def inactive_user(request):

@@ -9,6 +9,7 @@ from django.contrib import messages
 from .models import Project, Task, Profile
 from utils import utility
 from .mail_server import MailServer
+import datetime
 # abiraj asrif420
 
 def index(request):
@@ -92,11 +93,6 @@ def signout(request):
     if request.user.is_authenticated:logout(request)
     return redirect('signin')
 
-def get_peers(request):
-    peer_name = request.POST.get("peer_name")
-    users = list(User.objects.filter(username__icontains=peer_name).values_list('username', flat=True))
-    return JsonResponse({"users": users})
-
 @login_required(login_url='/signin')
 def get_projects(request):
     role = get_role(request)
@@ -124,6 +120,28 @@ def get_tasks(request, projectid):
         task['assigned'] = assigned_user
         tasks_dict.append(task)
     return JsonResponse({"tasks": tasks_dict})
+
+@group_required(const.LEAD, const.MANAGER)
+def create_task(request):
+    if request.method == 'POST':
+        task_name = request.POST['task-name']
+        task_description = request.POST['task-description']
+        project_id = request.POST['project_id']
+        due = request.POST['task-due']
+        project = Project.objects.filter(id=project_id).first()
+        task = Task.objects.create(
+            name=task_name,
+            description=task_description,
+            project=project,
+            status=const.TASK_TODO,
+            due=due
+        )
+        if not project.started:
+            project.started = datetime.datetime.now()
+            project.save()
+        print(project_id)
+        return JsonResponse({'status': 200, 'project_id': project_id})
+    return render(request, 'manager/create_task.html')
 
 @login_required(login_url='/signin')
 def get_task_list(request):

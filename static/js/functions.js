@@ -255,27 +255,6 @@ function selectUser(userId, username) {
     $('#user-search-results').empty();
 }
 
-function create_task(id) {
-    const form = document.getElementById('taskForm');
-    
-    // Gather the form data
-    const formData = new FormData(form);
-    formData.append('project_id', id); // Append the project ID if needed
-
-    // Submit the form data via AJAX
-    fetch('/manager/create-task', {
-        method: 'POST',
-        body: formData,
-    })
-    .then(response => response.json())
-    .then(data => {
-        window.location.reload()
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-}
-
 function changeProjectStatus(projectId) {
     const selectedStatus = document.getElementById("project-status-select").value;
     $.ajax({
@@ -362,80 +341,6 @@ function selectManager(managerid, username) {
     $('#manager-search-results').empty();
 }
 
-function load_members() {
-    $.ajax({
-        type: "GET",
-        url: "/lead/view-members",
-        success: function (response) {
-            // Clear the inactive users table and populate it
-            $(".inactives_table_data").empty();
-            response["inactives"].forEach((user, index) => {
-                setTimeout(function () {
-                    $(".inactives_table_data").append(`
-                        <tr>
-                            <td>${user.id}</td>
-                            <td style="text-transform: capitalize;">${user.username}</td>
-                            <td>${user.email}</td>
-                            <td>${user.role}</td>
-                            <td>
-                                <i class="fas fa-check-circle text-success me-3 px-1" onclick="approve_user(${user.id})" style="cursor: pointer;" title="Approve"></i>
-                                <i class="fas fa-trash-alt text-danger px-1" onclick="delete_user(${user.id})" style="cursor: pointer;" title="Remove"></i>
-                            </td>
-                        </tr>
-                    `);
-                }, index * 50);
-            });
-            // Clear the leads table and populate it
-            $(".leads_table_data").empty();
-            response["leads"].forEach((user, index) => {
-                setTimeout(function () {
-                    $(".leads_table_data").append(`
-                        <tr>
-                            <td>${user.id}</td>
-                            <td style="text-transform: capitalize;">${user.username}</td>
-                            <td>${user.email}</td>
-                            <td>
-                                <i class="fas fa-user-alt-slash text-danger me-3 px-1" onclick="inactive_user(${user.id})" style="cursor: pointer;" title="Delete"></i>
-                            </td>
-                        </tr>
-                    `);
-                }, index * 50);
-            });
-            $(".managers_table_data").empty();
-            response["managers"].forEach((user, index) => {
-                setTimeout(function () {
-                    $(".managers_table_data").append(`
-                        <tr>
-                            <td>${user.id}</td>
-                            <td style="text-transform: capitalize;">${user.username}</td>
-                            <td>${user.email}</td>
-                            <td>
-                                <i class="fas fa-user-alt-slash text-danger me-3 px-1" onclick="inactive_user(${user.id})" style="cursor: pointer;" title="Delete"></i>
-                            </td>
-                        </tr>
-                    `);
-                }, index * 50);
-            });
-            // Clear the peers table and populate it
-            $(".peers_table_data").empty();
-            response["peers"].forEach((user, index) => {
-                setTimeout(function () {
-                    $(".peers_table_data").append(`
-                        <tr>
-                            <td>${user.id}</td>
-                            <td style="text-transform: capitalize;">${user.username}</td>
-                            <td>${user.email}</td>
-                            <td>
-                                <i class="fas fa-user-alt-slash text-danger me-3 px-1" onclick="inactive_user(${user.id})" style="cursor: pointer;" title="Delete"></i>
-                            </td>
-                        </tr>
-                    `);
-                }, index * 50);
-            });
-        },
-    });
-}
-
 function test_mail_server() {
     var formData = new FormData(document.getElementById('mail-server-form'));
     if (formData.get('to_mail') === '') {
@@ -462,53 +367,3 @@ function test_mail_server() {
         }
     });
 };
-
-function delete_user(id) {
-    confirm("Are you sure you want to delete this user?");
-    if (!confirm) {
-        return;
-    }
-    $.ajax({
-        type: "POST",
-        url: `/lead/delete-user`,
-        data: {
-            userid: id,
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-        },
-        success: function (response) {
-            load_members()
-        },
-    });
-}
-
-function inactive_user(id) {
-    confirm("Are you sure you want to inactive this user?");
-    if (!confirm) {
-        return;
-    }
-    $.ajax({
-        type: "POST",
-        url: `/lead/inactive-user`,
-        data: {
-            userid: id,
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-        },
-        success: function (response) {
-            load_members()
-        },
-    });
-}
-
-function approve_user(id) {
-    $.ajax({
-        type: "POST",
-        url: `/lead/approve-user`,
-        data: {
-            userid: id,
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-        },
-        success: function (response) {
-            load_members()
-        },
-    });
-}
