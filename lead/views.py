@@ -68,16 +68,33 @@ def delete_member(request):
             return JsonResponse({'status': 403})
     return JsonResponse({'status': 200})
 
+
+# projects views
 @group_required(const.LEAD)
 def create_project(request):
     if request.method == 'POST':
-        project_name = request.POST['project-name']
-        project_description = request.POST['project-description']
-        project_client_name = request.POST['project-client_name']
-        project_due = request.POST['project-due']
-        app_models.Project.objects.create(name=project_name, description=project_description, client_name=project_client_name, due=project_due)
-        return redirect('view-projects')
+        project_name = request.POST.get('project_name')
+        project_description = request.POST.get('project_description')
+        client_name = request.POST.get('project_client')
+        due = request.POST.get('project_due')
+        project = {
+            "name": project_name,
+            "description": project_description,
+        }
+        if client_name:
+            project['client_name'] = client_name
+        if due:
+            project['due'] = due
+        app_models.Project.objects.create(**project)
+        messages.success(request, 'Project created successfully.')
+        return JsonResponse({'status': 200})
     return render(request, 'lead/create_project.html')
+
+@group_required(const.LEAD)
+def delete_project(request):
+    project_id = request.POST.get('project_id')
+    app_models.Project.objects.filter(id=project_id).delete()
+    return JsonResponse({'status': 200})
 
 @group_required(const.LEAD)
 def assign_project_manager(request):
@@ -113,7 +130,7 @@ def create_task(request):
             name=task_name,
             description=task_description,
             project=project,
-            user=User.objects.get(id=task_user),
+            assigned_to=User.objects.get(id=task_user),
             status=const.TASK_TODO,
             due=task_due
         )

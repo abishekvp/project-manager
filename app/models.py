@@ -6,7 +6,7 @@ class Project(models.Model):
     name = models.CharField(max_length=64)
     description = models.TextField()
     manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    client_name = models.CharField(max_length=64)
+    client_name = models.CharField(max_length=64, null=True)
     status = models.CharField(max_length=10, default="DESIGN")
     created = models.DateTimeField(auto_now_add=True)
     started = models.DateTimeField(null=True)

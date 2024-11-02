@@ -26,7 +26,6 @@ urlpatterns = [
     path('hold-task', views.hold_task, name='hold-task'),
     path('task-detail/', views.task_detail, name='task-detail'),
     path('sort-tasks-by-status', views.sort_tasks_by_status, name='sort-tasks-by-status'),
-    path('delete-project', views.delete_project, name='delete-project'),
     path('delete-task', views.delete_task, name='delete-task'),
     path('remove-assigned-peer', views.remove_assigned_peer, name='remove-assigned-peer'),
     path('change-project-status', views.change_project_status, name='change-project-status'),

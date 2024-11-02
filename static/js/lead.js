@@ -1,11 +1,11 @@
-function load_tasks_with_actions(tasks){
+function load_tasks(tasks){
     const tasksTableBody = $(".project_tasks_table");
     tasksTableBody.empty();
     tasks.forEach((task, index) => {
         let taskActions;
         if (task.assigned) {
             taskActions = `
-                <i class="fas fa-user-slash text-warning ms-1" onclick="remove_assigned_peer(${task.id})" style="cursor: pointer;" title="Remove User"></i>
+                <i class="fas fa-user-slash text-warning ms-1" onclick="remove_task_assigned(${task.id})" style="cursor: pointer;" title="Remove User"></i>
                 <span class="text-success ms-2">${task.assigned}</span>
             `;
         } else {
@@ -41,35 +41,6 @@ function load_tasks_with_actions(tasks){
     });
 }
 
-function load_tasks_without_actions(tasks){
-    const tasksTableBody = $(".peer_tasks_table_data");
-    $(tasksTableBody).empty();
-    tasks.forEach((task, index) => {
-        const statusOptions = `
-            <select onchange="update_task_status('${encodeURIComponent(JSON.stringify(task))}', this.value)" class="form-select task-status" id="${task.id}" style="${TASK_STATUS_COLORS[task.status]}">
-                <option value="TODO" ${task.status === 'TODO' ? 'selected' : ''}>TODO</option>
-                <option value="IN-PROGRESS" ${task.status === 'IN-PROGRESS' ? 'selected' : ''}>IN PROGRESS</option>
-                <option value="VERIFY" ${task.status === 'VERIFY' ? 'selected' : ''}>VERIFY</option>
-                <option value="CORRECTION" ${task.status === 'CORRECTION' ? 'selected' : ''}>CORRECTION</option>
-                <option value="HOLD" ${task.status === 'HOLD' ? 'selected' : ''}>HOLD</option>
-                <option value="COMPLETE" ${task.status === 'COMPLETE' ? 'selected' : ''}>COMPLETE</option>
-            </select>
-        `;
-
-        tasksTableBody.append(
-            `<tr>
-                <td>${task.id}</td>
-                <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_details('${task.id}')" style="cursor: pointer;" title="Description"></i></td>
-                <td>${task.created}</td>
-                <td>${task.started}</td>
-                <td>${task.updated}</td>
-                <td>${task.due}</td>
-                <td>${statusOptions}</td>
-            </tr>`
-        );
-    });
-}
-
 function load_tasks_for_view(tasks){
     const tasksTableBody = $(".tasks_table_data");
     $(tasksTableBody).empty();
@@ -87,6 +58,20 @@ function load_tasks_for_view(tasks){
                 <td>${task.assigned}</td>
             </tr>`
         );
+    });
+}
+
+function reload_project_task(projectid){
+    $.ajax({
+        url: '/get-project-tasks',
+        type: 'POST',
+        data: {
+            projectid: projectid,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function(response){
+            load_tasks(response['tasks']);
+        },
     });
 }
 
@@ -111,7 +96,8 @@ function assign_task() {
     $('#assignTaskModal').modal('hide');
 }
 
-function remove_assigned_peer(taskid) {
+function remove_task_assigned(taskid) {
+    alert(taskid)
     $('#confirmRemoveAssigned').modal('show');    
     $("#confirmRemoveAssignedBtn").click(function(){
         $.ajax({
@@ -129,12 +115,16 @@ function remove_assigned_peer(taskid) {
     })
 }
 
-function create_task(){
+function create_task(id=NaN){
+    if (id){
+        $("#search-project").hide()
+        $('#projectCreateTask').val(id)
+    }
     $('#createTaskModal').modal('show');
-    $('#create-common-task').click(function(){
+    $('#create-task').click(function(){
         var task_name = $('#createTaskModalForm input[name="task-name"]').val()
         var task_description = $('#createTaskModalForm textarea[name="task-description"]').val()
-        var task_user = $('#createTaskModalForm input[name="task-user"]').val()
+        var task_user = $('#userCreateTask').val()
         var task_due = $('#createTaskModalForm input[name="task-due"]').val()
         $.ajax({
             type: "POST",
@@ -149,48 +139,7 @@ function create_task(){
             },
             success: function (response) {
                 $('#createTaskModal').modal('hide');
-                window.location.replace(response.redirect)
-            },
-        });
-    })
-}
-
-$(document).ready(function() {
-    $('#projectForm').on('submit', function(event) {
-        event.preventDefault();
-        const formData = new FormData(this);
-        $.ajax({
-            type: "POST",
-            url: "/lead/create-project",
-            data: formData,
-            success: function (response) {
-            },
-        });
-        $('#createProjectModal').modal('hide');
-    });
-});
-
-function create_project(){
-    $('#createProjectModal').modal('show');
-    $('#create-common-task').click(function(){
-        var task_name = $('#createTaskModalForm input[name="task-name"]').val()
-        var task_description = $('#createTaskModalForm textarea[name="task-description"]').val()
-        var task_user = $('#createTaskModalForm input[name="task-user"]').val()
-        var task_due = $('#createTaskModalForm input[name="task-due"]').val()
-        $.ajax({
-            type: "POST",
-            url: `/lead/create-task`,
-            data: {
-                task_name: task_name,
-                task_description: task_description,
-                task_user: task_user,
-                task_project: $('#projectCreateTask').val(),
-                task_due: task_due,
-                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-            },
-            success: function (response) {
-                $('#createTaskModal').modal('hide');
-                window.location.replace(response.redirect)
+                window.location.reload();
             },
         });
     })
@@ -359,6 +308,87 @@ function sortTaskByStatus(status){
     });
 }
 
+
+// porjects
+
+function assign_project() {
+    const form = document.getElementById('assignProjectForm');
+    const formData = new FormData(form);
+    $.ajax({
+        type: "POST",
+        url: "/lead/assign-project",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            $('#assignProjectModal').modal('hide');
+            window.location.reload();
+        },
+        error: function (error) {
+            console.error("Error assigning task:", error);
+        }
+    });
+}
+
+function create_project(){
+    $('#createProjectModal').modal('show');
+    $('#projectForm').on('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        $.ajax({
+            type: "POST",
+            url: "/lead/create-project",
+            data: {
+                project_name: formData.get('project-name'),
+                project_description: formData.get('project-description'),
+                project_due: formData.get('project-due'),
+                project_client: formData.get('project-client'),
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+            },
+            success: function(response) {
+                $('#createProjectModal').modal('hide');
+                window.location.reload();
+            }
+        });
+    });
+}
+
+function delete_project(id) {
+    $('#confirmDeleteProject').modal('show');
+    $("#confirmDeleteProjectBtn").click(function(){
+        $.ajax({
+            type: "POST",
+            url: `/lead/delete-project`,
+            data: {
+                project_id: id,
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            },
+            success: function (response) {
+                $('#confirmDeleteProject').modal('hide');
+                window.location.href = "/lead/view-projects";
+            },
+        });
+    })
+};
+
+function change_project_status(projectId) {
+    const selectedStatus = document.getElementById("project-status-select").value;
+    $.ajax({
+        type: "POST",
+        url: `/change-project-status`,
+        data: {
+            status: selectedStatus,
+            project_id: projectId,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function(response) {
+            setProjectStatusBadge(selectedStatus);
+        },
+        error: function(error) {
+            window.location.reload();
+        }
+    });
+}
 
 // Members
 

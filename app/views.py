@@ -96,11 +96,15 @@ def signout(request):
 @login_required(login_url='/signin')
 def get_projects(request):
     role = get_role(request)
+    projects_dict = []
     if role == const.LEAD:
         projects = Project.objects.all()
     else:
+        tasks = Task.objects.filter(assigned_to=request.user)
+        user_projects = Project.objects.filter(id__in=tasks.values('project')).distinct()
+        for project in user_projects:
+            projects_dict.append(utility.as_dict(project))
         projects = Project.objects.filter(manager=request.user)
-    projects_dict = []
     for project in projects:
         project = utility.as_dict(project)
         projects_dict.append(project)
@@ -167,6 +171,7 @@ def get_task_list(request):
 
 def get_project_tasks(request):
     projectid = request.POST.get('projectid')
+    print(projectid)
     if get_role(request) == "peer":
         tasks = Task.objects.filter(project_id=projectid, assigned_to=request.user)
     else:
@@ -300,12 +305,6 @@ def sort_tasks_by_status(request):
         task['project'] = project_name
         tasks_dict.append(task)
     return JsonResponse({"tasks": tasks_dict, "status": status})
-
-@group_required(const.LEAD)
-def delete_project(request):
-    projectid = request.POST.get('projectid')
-    Project.objects.filter(id=projectid).delete()
-    return redirect('view-projects')
 
 @group_required(const.LEAD)
 def delete_task(request):

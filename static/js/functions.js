@@ -65,43 +65,6 @@ function get_projects() {
     });
 };
 
-// Function to remove the assigned user
-function remove_assigned_peer(taskid) {
-    $('#confirmRemoveAssigned').modal('show');
-    $("#confirmRemoveAssignedBtn").click(function(){
-        $.ajax({
-            type: "POST",
-            url: `/remove-assigned-peer`,
-            data: {
-                taskid: taskid,
-                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-            },
-            success: function (response) {
-                $('#confirmRemoveAssigned').modal('hide');
-                get_project_tasks(response.project_id);
-            },
-        });
-    })
-}
-
-function delete_project(id) {
-    $('#confirmDeleteProject').modal('show');
-    $("#confirmDeleteProjectBtn").click(function(){
-        $.ajax({
-            type: "POST",
-            url: `/delete-project`,
-            data: {
-                project_id: id,
-                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-            },
-            success: function (response) {
-                $('#confirmDeleteProject').modal('hide');
-                window.location.href = "/lead/projects";
-            },
-        });
-    })
-};
-
 function convertUrlsToLinks(text) {
     const urlPattern = /(https?:\/\/[^\s]+)/g;
     return text.replace(urlPattern, function (url) {
@@ -253,44 +216,6 @@ function selectUser(userId, username) {
     $('#assignTaskForm input[name="user_id"]').val(userId);
     $('#user-search-input').val(username);
     $('#user-search-results').empty();
-}
-
-function changeProjectStatus(projectId) {
-    const selectedStatus = document.getElementById("project-status-select").value;
-    $.ajax({
-        type: "POST",
-        url: `/change-project-status`,
-        data: {
-            status: selectedStatus,
-            project_id: projectId,
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-        },
-        success: function(response) {
-            setProjectStatusBadge(selectedStatus);
-        },
-        error: function(error) {
-            window.location.reload();
-        }
-    });
-}
-
-function assign_project() {
-    const form = document.getElementById('assignProjectForm');
-    const formData = new FormData(form);
-    $.ajax({
-        type: "POST",
-        url: "/lead/assign-project",
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function (response) {
-            get_tasks(response.project_id);
-            $('#assignProjectModal').modal('hide');
-        },
-        error: function (error) {
-            console.error("Error assigning task:", error);
-        }
-    });
 }
 
 function remove_project_manager(projectid){

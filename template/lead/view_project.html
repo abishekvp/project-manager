@@ -59,12 +59,12 @@
         <button class="btn btn-danger me-1" onclick="delete_project('{{ project.id }}')">
             <i class="fas fa-trash-alt"></i> Delete
         </button>
-        <button class="btn btn-success me-1" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+        <button class="btn btn-success me-1" data-bs-toggle="modal" onclick="create_task('{{ project.id }}')">
             <i class="fas fa-plus"></i> Add Task
         </button>
         <div class="row mb-1">
             <div class="col-md-12 text-start">
-                <select id="project-status-select" class="form-select" onchange="changeProjectStatus('{{ project.id }}')">
+                <select id="project-status-select" class="form-select" onchange="change_project_status('{{ project.id }}')">
                     <option value="ALL" {% if project.status == 'ALL' %}selected{% endif %}>ALL</option>
                     <option value="DESIGN" {% if project.status == 'DESIGN' %}selected{% endif %}>DESIGN</option>
                     <option value="DEVELOPMENT" {% if project.status == 'DEVELOPMENT' %}selected{% endif %}>DEVELOPMENT</option>
@@ -117,7 +117,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="project_id">
                     <input type="hidden" name="manager_id">
-                    <button type="submit" class="btn btn-primary" onclick="assign_project()">Assign Project</button>
+                    <button type="button" class="btn btn-primary" onclick="assign_project()">Assign Project</button>
                 </form>
             </div>
         </div>
@@ -127,7 +127,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         setProjectStatusBadge("{{ project.status }}");
         reload_project_task("{{ project.id }}")
-        localStorage.setItem('projectid', '{{project.id}}')
+        localStorage.setItem('project_id', '{{project.id}}')
     });
 </script>
 {% endblock %}

@@ -41,20 +41,6 @@ function load_project_tasks(tasks){
     });
 }
 
-function reload_project_task(projectid){
-    $.ajax({
-        url: '/get-project-tasks',
-        type: 'POST',
-        data: {
-            projectid: projectid,
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-        },
-        success: function(response){
-            load_project_tasks(response['tasks']);
-        },
-    });
-}
-
 function add_task(id) {
     const form = document.getElementById('taskForm');
     const formData = new FormData(form);
