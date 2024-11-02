@@ -5,17 +5,17 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <button class="nav-link btn btn-primary text-uppercase font-weight-bold py-2 px-md-4 active" onclick="create_task()">Create</button>
+                    <button class="nav-link btn btn-primary text-uppercase font-weight-bold py-2 px-md-4 active" onclick="create_project()">Create</button>
                 </li>
             </ul>
             <a class="nav-link p-3">
-                <select onchange="sort_project_by_status(this.value)" class="form-select task-status">
-                    <option value="ALL">ALL</option>
-                    <option value="TODO">TODO</option>
-                    <option value="IN-PROGRESS">IN PROGRESS</option>
-                    <option value="VERIFY">VERIFY</option>
+                <select id="project-status-select" class="form-select" onchange="changeProjectStatus('{{ project.id }}')">
+                    <option value="DESIGN">DESIGN</option>
+                    <option value="DEVELOPMENT">DEVELOPMENT</option>
+                    <option value="REVIEW">REVIEW</option>
                     <option value="CORRECTION">CORRECTION</option>
-                    <option value="HOLD">HOLD</option>
+                    <option value="UPDATE">UPDATE</option>
+                    <option value="FINAL">FINAL</option>
                     <option value="COMPLETE">COMPLETE</option>
                 </select>
             </a>

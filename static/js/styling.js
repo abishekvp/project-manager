@@ -10,10 +10,10 @@ const TASK_STATUS_COLORS = {
 };
 const STATUS_COLOR = {
     "DESIGN": "secondary",
-    "DEV1": "info",
-    "TEST1": "warning",
-    "DEV2": "primary",
-    "TEST2": "warning",
+    "DEVELOPMENT": "info",
+    "REVIEW": "warning",
+    "CORRECTION": "primary",
+    "UPDATE": "warning",
     "FINAL": "danger",
     "COMPLETE": "success"
 };

@@ -155,6 +155,47 @@ function create_task(){
     })
 }
 
+$(document).ready(function() {
+    $('#projectForm').on('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        $.ajax({
+            type: "POST",
+            url: "/lead/create-project",
+            data: formData,
+            success: function (response) {
+            },
+        });
+        $('#createProjectModal').modal('hide');
+    });
+});
+
+function create_project(){
+    $('#createProjectModal').modal('show');
+    $('#create-common-task').click(function(){
+        var task_name = $('#createTaskModalForm input[name="task-name"]').val()
+        var task_description = $('#createTaskModalForm textarea[name="task-description"]').val()
+        var task_user = $('#createTaskModalForm input[name="task-user"]').val()
+        var task_due = $('#createTaskModalForm input[name="task-due"]').val()
+        $.ajax({
+            type: "POST",
+            url: `/lead/create-task`,
+            data: {
+                task_name: task_name,
+                task_description: task_description,
+                task_user: task_user,
+                task_project: $('#projectCreateTask').val(),
+                task_due: task_due,
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            },
+            success: function (response) {
+                $('#createTaskModal').modal('hide');
+                window.location.replace(response.redirect)
+            },
+        });
+    })
+}
+
 function delete_task(taskid) {
     $('#confirmDeleteProject').modal('show');
     $("#confirmDeleteProjectBtn").click(function(){

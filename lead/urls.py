@@ -8,8 +8,8 @@ urlpatterns = [
     path('admin-dashboard', views.admin_dashboard, name='admin-dashboard'),
     path('view-members', views.view_members, name='view-members'),
     path('delete-member', views.delete_member, name='delete-member'),
-
     path('create-project', views.create_project, name='create-project'),
+
     path('create-task', views.create_task, name='create-task'),
     path('view-projects', views.view_projects, name='view-projects'),
     path('view-project/<int:projectid>', views.view_project, name='lead-view-project'),
