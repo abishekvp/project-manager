@@ -1,16 +1,14 @@
 function loads_maketing_leads(leads){
-    console.log(leads)
     const leadsTableBody = $(".marketing_table_data");
     $(leadsTableBody).empty();
     leads.forEach((lead, index) => {
         const statusOptions = `
-        <select onchange="update_lead_status('${encodeURIComponent(JSON.stringify(lead))}', this.value)" class="form-select lead-status" id="${lead.id}" style="${LEAD_STATUS_COLORS[lead.status]}">
-            <option value="TODO" ${lead.status === 'TODO' ? 'selected' : ''}>TODO</option>
-            <option value="IN-PROGRESS" ${lead.status === 'IN-PROGRESS' ? 'selected' : ''}>IN PROGRESS</option>
-            <option value="VERIFY" ${lead.status === 'VERIFY' ? 'selected' : ''}>VERIFY</option>
-            <option value="CORRECTION" ${lead.status === 'CORRECTION' ? 'selected' : ''}>CORRECTION</option>
-            <option value="HOLD" ${lead.status === 'HOLD' ? 'selected' : ''}>HOLD</option>
-            <option value="COMPLETE" ${lead.status === 'COMPLETE' ? 'selected' : ''}>COMPLETE</option>
+        <select onchange="update_lead_status('${encodeURIComponent(JSON.stringify(lead.id))}', this.value)" class="form-select lead-status" id="${lead.id}" style="${LEAD_STATUS_COLORS[lead.status]}">
+            <option value="ACTIVE" ${lead.status === 'ACTIVE' ? 'selected' : ''}>ACTIVE</option>
+            <option value="HOT" ${lead.status === 'HOT' ? 'selected' : ''}>HOT</option>
+            <option value="COLD" ${lead.status === 'COLD' ? 'selected' : ''}>COLD</option>
+            <option value="CLIENT" ${lead.status === 'CLIENT' ? 'selected' : ''}>CLIENT</option>
+            <option value="INACTIVE" ${lead.status === 'INACTIVE' ? 'selected' : ''}>INACTIVE</option>
         </select>`;
         
         leadsTableBody.append(
@@ -24,6 +22,21 @@ function loads_maketing_leads(leads){
                 <td>${statusOptions}</td>
             </tr>`
         );
+    });
+}
+
+function update_lead_status(lead, status){
+    $.ajax({
+        type: "POST",
+        url: "/marketing/update-lead-status",
+        data: {
+            lead: lead,
+            status: status,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+        },
+        success: function(response) {
+            window.location.reload();
+        }
     });
 }
 
@@ -64,7 +77,34 @@ function get_marketing_leads(){
 }
 
 function sort_leads_by_status(status){
+    $.ajax({
+        type: "GET",
+        url: "/marketing/sort-market-leads",
+        data: {
+            status: status
+        },
+        success: function(response) {
+            loads_maketing_leads(response.leads)
+        }
+    });
 }
+
+$('#search-market-leads').on('keyup', function() {
+    const term = $(this).val();
+    if (term) {
+        $.ajax({
+            type: "GET",
+            url: `/marketing/search-market-leads/`,
+            data: { term: term },
+            success: function (response) {
+                loads_maketing_leads(response.leads);
+            },
+        });
+    }
+    else{
+        get_marketing_leads();
+    }
+});
 
 function lead_details(lead_id){
     $.ajax({
@@ -107,10 +147,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
 function add_lead_status_option(selectElement) {
     $.ajax({
-        url: '/get-market-lead-status',
+        url: '/marketing/get-market-lead-status',
         type: 'GET',
         success: function(response){
-            response.stages.forEach(function(optionText) {
+            response.status.forEach(function(optionText) {
                 var option = document.createElement("option");
                 option.id = "id-"+optionText;
                 option.textContent = optionText;

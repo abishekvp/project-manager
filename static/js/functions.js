@@ -25,10 +25,11 @@ function getCookie(name) {
 document.addEventListener("DOMContentLoaded", function() {
     var selectElement = document.getElementById("project-status-select");
     if (selectElement) {
-      addOptionsToSelect(selectElement);
+        addOptionsToSelect(selectElement);
     }
-  });
-  function addOptionsToSelect(selectElement) {
+});
+
+function addOptionsToSelect(selectElement) {
     $.ajax({
         url: '/get-project-stages',
         type: 'GET',
@@ -42,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function() {
             set_selected_option()
         }
     });
-  }
+}
 
 function convertUrlsToLinks(text) {
     const urlPattern = /(https?:\/\/[^\s]+)/g;
