@@ -1,7 +1,19 @@
 {% extends 'peer/dashboard.html' %}
 {% block peer_board %}
-<div class="table-responsive">
-    <table class="table table-striped table-bordered table-dark"> <!-- Added table-dark class -->
+<div class="table-responsive mt-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <a class="nav-link p-3">
+                <select id="project-status-select" class="form-select" onchange="sort_project_by_status(this.value)">
+                    <option value="ALL">ALL</option>
+                </select>
+            </a>
+            <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" id="search-projects-list" placeholder="Search" aria-label="Search">
+            </form>
+        </div>
+    </nav>
+    <table class="table table-striped table-bordered table-dark">
         <thead class="table-light">
             <tr>
                 <th>P-ID</th>
@@ -11,6 +23,7 @@
                 <th>Updated</th>
                 <th>Due Date</th>
                 <th>Status</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody class="projects_table_data">
@@ -20,7 +33,7 @@
 </div>
 <script>
     window.onload = function() {
-        get_peer_projects();
+        get_projects();
     };
 </script>
 {% endblock %}

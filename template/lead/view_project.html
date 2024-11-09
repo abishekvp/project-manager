@@ -64,16 +64,14 @@
         </button>
         <div class="row mb-1">
             <div class="col-md-12 text-start">
-                <select id="project-status-select" class="form-select" onchange="change_project_status('{{ project.id }}')">
-                    <option value="ALL" {% if project.status == 'ALL' %}selected{% endif %}>ALL</option>
-                    <option value="DESIGN" {% if project.status == 'DESIGN' %}selected{% endif %}>DESIGN</option>
-                    <option value="DEVELOPMENT" {% if project.status == 'DEVELOPMENT' %}selected{% endif %}>DEVELOPMENT</option>
-                    <option value="REVIEW" {% if project.status == 'REVIEW' %}selected{% endif %}>REVIEW</option>
-                    <option value="CORRECTION" {% if project.status == 'CORRECTION' %}selected{% endif %}>CORRECTION</option>
-                    <option value="UPDATE" {% if project.status == 'UPDATE' %}selected{% endif %}>UPDATE</option>
-                    <option value="FINAL" {% if project.status == 'FINAL' %}selected{% endif %}>FINAL</option>
-                    <option value="COMPLETE" {% if project.status == 'COMPLETE' %}selected{% endif %}>COMPLETE</option>
-                </select>
+                <select id="project-status-select" class="form-select" onchange="change_project_status('{{ project.id }}')"></select>
+                <script>
+                    function set_selected_option() {
+                        var project_status = "{{ project.status }}";
+                        var option = document.getElementById('id-'+project_status);
+                        option.selected = true;
+                    }
+                </script>
             </div>
         </div>
     </div>     

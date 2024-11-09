@@ -1,0 +1,113 @@
+{% extends 'lead/dashboard.html' %}
+{% load static %}
+{% block lead_board %}
+<div class="table-responsive mt-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <button class="nav-link btn btn-primary text-uppercase font-weight-bold py-2 px-md-4 active" onclick="create_market_lead()">Create</button>
+                </li>
+            </ul>
+            <a class="nav-link p-3">
+                <select id="market-lead-status-select" class="form-select" onchange="sort_leads_by_status(this.value)">
+                    <option value="ALL">ALL</option>
+                </select>
+            </a>
+            <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" id="search-marketing-lead-list" placeholder="Search" aria-label="Search">
+            </form>
+        </div>
+    </nav>
+    <table class="table table-striped table-bordered table-dark">
+        <thead class="table-light">
+            <tr>
+                <th>P-ID</th>
+                <th>Client Name</th>
+                <th>Client Email</th>
+                <th>Client Contact</th>
+                <th>Created</th>
+                <th>Updated</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody class="marketing_table_data"></tbody>
+    </table>
+</div>
+<div class="modal fade" id="createLeadModal" tabindex="-1" aria-labelledby="createLeadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createLeadModalLabel">Create Lead</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createLeadModalForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="client-name" class="form-label">Client Name</label>
+                        <input type="text" class="form-control" id="client-name" name="client-name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="client-email" class="form-label">Client Email</label>
+                        <input class="form-control" id="client-email" name="client-email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="client-contact" class="form-label">Client Contact</label>
+                        <input class="form-control" id="client-contact" name="client-contact" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" id="create-client">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="leadDetailsModal" tabindex="-1" aria-labelledby="leadDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="leadDetailsModalLabel">Lead Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="leadDetailsModalForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="client-name" class="form-label">Client Name</label>
+                        <input type="text" class="form-control" id="client-name" name="client-name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="client-email" class="form-label">Client Email</label>
+                        <input class="form-control" id="client-email" name="client-email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="client-contact" class="form-label">Client Contact</label>
+                        <input class="form-control" id="client-contact" name="client-contact" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <!-- <button type="submit" class="btn btn-primary" id="create-client">Update</button> -->
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    window.onload = function() {
+        get_marketing_leads()
+    };
+</script>
+<script src="{% static 'js/marketing.js' %}"></script>
+{% endblock %}

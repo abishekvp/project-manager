@@ -1,4 +1,4 @@
-function load_tasks_with_actions(tasks){
+function load_tasks(tasks){
     const tasksTableBody = $(".project_tasks_table");
     tasksTableBody.empty();
     tasks.forEach((task, index) => {
@@ -41,35 +41,6 @@ function load_tasks_with_actions(tasks){
     });
 }
 
-function load_tasks_without_actions(tasks){
-    const tasksTableBody = $(".peer_tasks_table_data");
-    $(tasksTableBody).empty();
-    tasks.forEach((task, index) => {
-        const statusOptions = `
-            <select onchange="update_task_status('${encodeURIComponent(JSON.stringify(task))}', this.value)" class="form-select task-status" id="${task.id}" style="${TASK_STATUS_COLORS[task.status]}">
-                <option value="TODO" ${task.status === 'TODO' ? 'selected' : ''}>TODO</option>
-                <option value="IN-PROGRESS" ${task.status === 'IN-PROGRESS' ? 'selected' : ''}>IN PROGRESS</option>
-                <option value="VERIFY" ${task.status === 'VERIFY' ? 'selected' : ''}>VERIFY</option>
-                <option value="CORRECTION" ${task.status === 'CORRECTION' ? 'selected' : ''}>CORRECTION</option>
-                <option value="HOLD" ${task.status === 'HOLD' ? 'selected' : ''}>HOLD</option>
-                <option value="COMPLETE" ${task.status === 'COMPLETE' ? 'selected' : ''}>COMPLETE</option>
-            </select>
-        `;
-
-        tasksTableBody.append(
-            `<tr>
-                <td>${task.id}</td>
-                <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_details('${task.id}')" style="cursor: pointer;" title="Description"></i></td>
-                <td>${task.created}</td>
-                <td>${task.started}</td>
-                <td>${task.updated}</td>
-                <td>${task.due}</td>
-                <td>${statusOptions}</td>
-            </tr>`
-        );
-    });
-}
-
 function load_tasks_for_view(tasks){
     const tasksTableBody = $(".tasks_table_data");
     $(tasksTableBody).empty();
@@ -88,29 +59,6 @@ function load_tasks_for_view(tasks){
             </tr>`
         );
     });
-}
-
-function reload_project_task(projectid){
-    $.ajax({
-        url: '/get-project-tasks',
-        type: 'POST',
-        data: {
-            projectid: projectid,
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-        },
-        success: function(response){
-            if (response.role == "manager" || response.role == "lead"){
-                load_tasks_with_actions(response['tasks']);
-            }else{
-                load_tasks_without_actions(response['tasks']);
-            }
-        },
-    });
-}
-
-function reload_project_task_with_localstorage(){
-    const projectid = window.localStorage.getItem('project_id');
-    reload_project_task(projectid);
 }
 
 function assign_task() {
@@ -147,16 +95,20 @@ function remove_assigned_peer(taskid) {
     })
 }
 
-function create_common_task(){
+function create_task(id=NaN){
+    if (id){
+        $("#search-project").hide()
+        $('#projectCreateTask').val(id)
+    }
     $('#createTaskModal').modal('show');
-    $('#create-common-task').click(function(){
+    $('#create-task').click(function(){
         var task_name = $('#createTaskModalForm input[name="task-name"]').val()
         var task_description = $('#createTaskModalForm textarea[name="task-description"]').val()
-        var task_user = $('#createTaskModalForm input[name="task-user"]').val()
+        var task_user = $('#userCreateTask').val()
         var task_due = $('#createTaskModalForm input[name="task-due"]').val()
         $.ajax({
             type: "POST",
-            url: `/lead/create-common-task`,
+            url: `/manager/create-task`,
             data: {
                 task_name: task_name,
                 task_description: task_description,
@@ -167,15 +119,15 @@ function create_common_task(){
             },
             success: function (response) {
                 $('#createTaskModal').modal('hide');
-                window.location.replace(response.redirect)
+                window.location.reload();
             },
         });
     })
 }
 
 function delete_task(taskid) {
-    $('#confirmDeleteProject').modal('show');
-    $("#confirmDeleteProjectBtn").click(function(){
+    $('#confirmDeleteTask').modal('show');
+    $("#confirmDeleteTaskBtn").click(function(){
         $.ajax({
             url: '/delete-task',
             type: 'POST',
@@ -184,7 +136,7 @@ function delete_task(taskid) {
                 csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
             },
             success: function(response){
-                $('#confirmDeleteProject').modal('hide');
+                $('#confirmDeleteTask').modal('hide');
                 reload_project_task(response.projectid);
             },
         });
@@ -312,26 +264,22 @@ function hold_task(){
     });
 }
 
-function manager_view_tasks(){
-    $.ajax({
-        url: '/manager/view-tasks',
-        type: 'GET',
-        success: function(response){
-            load_tasks_for_view(response.tasks);
-        }
-    });
-}
-
-function sortTaskByStatus(status){
+// projects
+function change_project_status(projectId) {
+    const selectedStatus = document.getElementById("project-status-select").value;
     $.ajax({
         type: "POST",
-        url: `/sort-tasks-by-status`,
+        url: `/change-project-status`,
         data: {
-            status: status,
+            status: selectedStatus,
+            project_id: projectId,
             csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
         },
-        success: function (response) {
-            load_tasks_for_view(response.tasks);
+        success: function(response) {
+            setProjectStatusBadge(selectedStatus);
         },
+        error: function(error) {
+            window.location.reload();
+        }
     });
 }

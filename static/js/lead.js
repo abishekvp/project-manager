@@ -97,7 +97,6 @@ function assign_task() {
 }
 
 function remove_task_assigned(taskid) {
-    alert(taskid)
     $('#confirmRemoveAssigned').modal('show');    
     $("#confirmRemoveAssignedBtn").click(function(){
         $.ajax({
@@ -284,7 +283,7 @@ function hold_task(){
     });
 }
 
-function get_list_all_tasks(){
+function get_tasks(){
     $.ajax({
         url: '/get-task-list',
         type: 'GET',
@@ -294,26 +293,13 @@ function get_list_all_tasks(){
     });
 }
 
-function sortTaskByStatus(status){
-    $.ajax({
-        type: "POST",
-        url: `/sort-tasks-by-status`,
-        data: {
-            status: status,
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-        },
-        success: function (response) {
-            load_tasks_for_view(response.tasks);
-        },
-    });
-}
 
-
-// porjects
+// projects
 
 function assign_project() {
     const form = document.getElementById('assignProjectForm');
     const formData = new FormData(form);
+    loading()
     $.ajax({
         type: "POST",
         url: "/lead/assign-project",
@@ -321,13 +307,31 @@ function assign_project() {
         processData: false,
         contentType: false,
         success: function (response) {
-            $('#assignProjectModal').modal('hide');
+            loaded()
             window.location.reload();
         },
         error: function (error) {
             console.error("Error assigning task:", error);
         }
     });
+    $('#assignProjectModal').modal('hide');
+}
+
+function remove_project_manager(projectid){
+    $('#confirmRemoveProjectManager').modal('show');
+    $("#confirmRemoveProjectManagerBtn").click(function(){
+        $.ajax({
+            type: "POST",
+            url: `/lead/remove-project-manager`,
+            data: {
+                projectid: projectid,
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            },
+            success: function (response) {
+                location.reload();
+            },
+        });
+    })
 }
 
 function create_project(){
@@ -335,6 +339,7 @@ function create_project(){
     $('#projectForm').on('submit', function(event) {
         event.preventDefault();
         const formData = new FormData(this);
+        loading()
         $.ajax({
             type: "POST",
             url: "/lead/create-project",
@@ -346,11 +351,12 @@ function create_project(){
                 csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
             },
             success: function(response) {
-                $('#createProjectModal').modal('hide');
+                loaded()
                 window.location.reload();
             }
         });
     });
+    $('#createProjectModal').modal('hide');
 }
 
 function delete_project(id) {
@@ -398,12 +404,12 @@ function load_members(members) {
         let actions;
         if (user.is_active) {
             actions = `
-                <i class="fas fa-user-slash text-warning justify-content-center px-2" onclick="inactive_user(${user.id})" style="cursor: pointer;" title="Approve"></i>
+                <i class="fas fa-user-slash text-warning justify-content-center px-2" onclick="inactive_user(${user.id}, '${user.username}')" style="cursor: pointer;" title="Approve"></i>
             `;
         } else {
             actions = `
-                <i class="fas fa-check-circle text-success px-1" onclick="approve_user(${user.id})" style="cursor: pointer;" title="Approve"></i>
-                <i class="fas fa-trash-alt text-danger px-1" onclick="delete_user(${user.id})" style="cursor: pointer;" title="Remove"></i>`
+                <i class="fas fa-check-circle text-success px-1" onclick="approve_user(${user.id}, '${user.username}')" style="cursor: pointer;" title="Approve"></i>
+                <i class="fas fa-trash-alt text-danger px-1" onclick="delete_user(${user.id}, '${user.username}')" style="cursor: pointer;" title="Remove"></i>`
         }
         setTimeout(function () {
             $(".users_table_data").append(`
@@ -420,10 +426,12 @@ function load_members(members) {
 }
 
 function reload_members(){
+    loading()
     $.ajax({
         type: "GET",
         url: "/lead/view-members",
         success: function (response) {
+            loaded()
             load_members(response.members);
         },
     });
@@ -451,8 +459,8 @@ function search_members(search){
     });
 }
 
-function delete_user(id) {
-    confirm("Are you sure you want to delete this user?");
+function delete_user(id, username) {
+    confirm("Are you sure you want to delete " + username + "?");
     if (!confirm) {
         return;
     }
@@ -473,8 +481,8 @@ function delete_user(id) {
     });
 }
 
-function inactive_user(id) {
-    confirm("Are you sure you want to inactive this user?");
+function inactive_user(id, username) {
+    confirm("Are you sure you want to inactive " + username + "?");
     if (!confirm) {
         return;
     }
@@ -491,7 +499,11 @@ function inactive_user(id) {
     });
 }
 
-function approve_user(id) {
+function approve_user(id, username) {
+    confirm("Are you sure you want to approve " + username + "?");
+    if (!confirm) {
+        return;
+    }
     $.ajax({
         type: "POST",
         url: `/lead/approve-user`,

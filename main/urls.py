@@ -27,6 +27,7 @@ urlpatterns = [
     path('lead/',include('lead.urls')),
     path('peer/',include('peer.urls')),
     path('manager/',include('manager.urls')),
+    path('marketing/',include('marketing.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

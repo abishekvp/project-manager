@@ -54,7 +54,7 @@
                 <th>Status</th>
             </tr>
         </thead>
-        <tbody id="task-list" class="peer_tasks_table_data">
+        <tbody id="task-list" class="tasks_table_data">
         </tbody>
     </table>
 </div>
@@ -104,9 +104,9 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Call the setProjectStatusBadge function on page load
         setProjectStatusBadge("{{ project.status }}");
         reload_project_task("{{ project.id }}")
+        localStorage.setItem('project_id', '{{project.id}}')
     });
 </script>
 {% endblock %}

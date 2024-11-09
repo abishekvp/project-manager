@@ -6,7 +6,8 @@ from django.contrib.auth.models import User
 from constants import constants as const
 from django.http import JsonResponse
 from django.contrib import messages
-from .models import Project, Task, Profile
+from .models import Project, Task, Profile, Lead
+from django.db.models import Q
 from utils import utility
 from .mail_server import MailServer
 import datetime
@@ -99,15 +100,15 @@ def get_projects(request):
     projects_dict = []
     if role == const.LEAD:
         projects = Project.objects.all()
-    else:
+    elif role == const.MANAGER:
         tasks = Task.objects.filter(assigned_to=request.user)
-        user_projects = Project.objects.filter(id__in=tasks.values('project')).distinct()
-        for project in user_projects:
-            projects_dict.append(utility.as_dict(project))
-        projects = Project.objects.filter(manager=request.user)
-    for project in projects:
-        project = utility.as_dict(project)
-        projects_dict.append(project)
+        projects = Project.objects.filter(Q(id__in=tasks.values('project')) | Q(manager=request.user))
+    elif role == const.PEER:
+        projects = Project.objects.filter(task__assigned_to=request.user).distinct()
+    if projects:
+        for project in projects:
+            project = utility.as_dict(project)
+            projects_dict.append(project)
     return JsonResponse({"projects": projects_dict})
 
 @login_required(login_url='/signin')
@@ -148,46 +149,66 @@ def create_task(request):
     return render(request, 'manager/create_task.html')
 
 @login_required(login_url='/signin')
-def get_task_list(request):
+def get_tasks_list(request):
     role = get_role(request)
     if role == const.LEAD:
         tasks = Task.objects.all()
     elif role == const.MANAGER:
-        tasks = Task.objects.filter(project__manager=request.user)
-    else:
+        tasks = Task.objects.filter(Q(project__manager=request.user) | Q(assigned_to=request.user))
+    elif role == const.PEER:
         tasks = Task.objects.filter(assigned_to=request.user)
     tasks_dict = []
-    for task in tasks:
-        if task.assigned_to:
-            assigned_user = task.assigned_to.username
-        else:
-            assigned_user = None
-        project_name = task.project.name
-        task = utility.as_dict(task)
-        task['assigned'] = assigned_user
-        task['project'] = project_name
-        tasks_dict.append(task)
+    if tasks:
+        for task in tasks:
+            if task.assigned_to:
+                assigned_user = task.assigned_to.username
+            else:
+                assigned_user = None
+            project_name = task.project.name
+            task = utility.as_dict(task)
+            task['assigned'] = assigned_user
+            task['project'] = project_name
+            tasks_dict.append(task)
     return JsonResponse({"tasks": tasks_dict})
+
+def search_task(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        query = request.GET.get('query')
+        role = get_role(request)
+        if role == const.LEAD:
+            tasks = Task.objects.filter(name__icontains=query)
+        elif role == const.MANAGER:
+            tasks = Task.objects.filter(Q(name__icontains=query) & (Q(project__manager=request.user) | Q(assigned_to=request.user)))
+        elif role == const.PEER:
+            tasks = Task.objects.filter(name__icontains=query, assigned_to=request.user)
+        tasks_dict = []
+        for task in tasks:
+            project_name = task.project.name
+            assigned = task.assigned_to.username if task.assigned_to else '  ---  '
+            task = utility.as_dict(task)
+            task['project'] = project_name
+            task['assigned'] = assigned
+            tasks_dict.append(task)
+        return JsonResponse({'tasks': tasks_dict})
 
 def get_project_tasks(request):
     projectid = request.POST.get('projectid')
-    if get_role(request) == "peer":
-        tasks = Task.objects.filter(project_id=projectid, assigned_to=request.user)
-    else:
-        tasks = Task.objects.filter(project_id=projectid)
     role = get_role(request)
+    if role == const.LEAD:
+        tasks = Task.objects.filter(project_id=projectid)
+    elif role == const.MANAGER:
+        tasks = Task.objects.filter(Q(project__manager=request.user) | Q(assigned_to=request.user))
+    if role == const.PEER:
+        tasks = Task.objects.filter(project_id=projectid, assigned_to=request.user)
     tasks_dict = []
     for task in tasks:
+        task_dict = utility.as_dict(task)
         if task.assigned_to:
-            assigned_user = task.assigned_to.username
-        else:
-            assigned_user = None
-        project_name = task.project.name
-        task = utility.as_dict(task)
-        task['assigned'] = assigned_user
-        task['project'] = project_name
-        tasks_dict.append(task)
-    return JsonResponse({"tasks": tasks_dict, "role": role})
+            task_dict['assigned'] = task.assigned_to.username
+        if task.project:
+            task_dict['project'] = task.project.name
+        tasks_dict.append(task_dict)
+    return JsonResponse({"tasks": tasks_dict})
 
 @login_required(login_url='/signin')
 def search_users(request):
@@ -201,6 +222,37 @@ def search_projects(request):
     query = request.GET.get('query', '')
     projects = Project.objects.filter(name__icontains=query)
     projects_list = [{'id': project.id, 'name': project.name} for project in projects]
+    return JsonResponse({'projects': projects_list})
+
+def search_projects_list(request):
+    query = request.GET.get('query', '')
+    role = get_role(request)
+    if role == const.LEAD:
+        projects = Project.objects.filter(name__icontains=query)
+    elif role == const.MANAGER:
+        projects = Project.objects.filter(Q(name__icontains=query) & (Q(manager=request.user) | (Q(task__assigned_to=request.user)))).distinct()
+    elif role == const.PEER:
+        projects = Project.objects.filter(Q(name__icontains=query) & (Q(task__assigned_to=request.user))).distinct()
+    projects_list = list()
+    for project in projects:
+        projects_list.append(utility.as_dict(project))
+    return JsonResponse({'projects': projects_list})
+
+def sort_projects_by_status(request):
+    status = str(request.POST.get('status')).strip().upper()
+    role = get_role(request)
+    filter_dict = dict()
+    if status in const.PROJECT_STATUS and status != const.ALL:
+        filter_dict['status'] = status
+    if role == const.LEAD:
+        projects = Project.objects.filter(**filter_dict)
+    elif role == const.MANAGER:
+        projects = Project.objects.filter(Q(**filter_dict) & (Q(manager=request.user) | (Q(task__assigned_to=request.user)))).distinct()
+    elif role == const.PEER:
+        projects = Project.objects.filter(Q(**filter_dict) & (Q(task__assigned_to=request.user))).distinct()
+    projects_list = list()
+    for project in projects:
+        projects_list.append(utility.as_dict(project))
     return JsonResponse({'projects': projects_list})
 
 @login_required(login_url='/signin')
@@ -279,31 +331,30 @@ def task_detail(request):
 
 def sort_tasks_by_status(request):
     status = str(request.POST.get("status")).upper()
-    personal = request.POST.get("table")
-    personal = True if personal == "table-personal" else False
-    request.session["personal_task"] = False
-    if personal:
-        request.session["personal_task"] = True
     filter_dict = dict()
-    if personal:
-        filter_dict["assigned_to__username"] = request.user
     if status != const.TASK_ALL:
         filter_dict["status"] = status
-    tasks = Task.objects.filter(**filter_dict)
-    if not tasks:
-        return JsonResponse({"tasks": [], "status": 400})
+    role = get_role(request)
+    if role == const.LEAD:
+        tasks = Task.objects.filter(**filter_dict).order_by("-created")
+    elif role == const.MANAGER:
+        tasks = Task.objects.filter(Q(**filter_dict) & (Q(project__manager=request.user) | Q(assigned_to=request.user))).order_by("-created")
+    elif role == const.PEER:
+        filter_dict["assigned_to"] = request.user
+        tasks = Task.objects.filter(**filter_dict).order_by("-created")
     tasks_dict = []
-    for task in tasks:
-        if task.assigned_to:
-            assigned_user = task.assigned_to.username
-        else:
-            assigned_user = None
-        project_name = task.project.name
-        task = utility.as_dict(task)
-        task['assigned'] = assigned_user
-        task['project'] = project_name
-        tasks_dict.append(task)
-    return JsonResponse({"tasks": tasks_dict, "status": status})
+    if tasks:
+        for task in tasks:
+            if task.assigned_to:
+                assigned_user = task.assigned_to.username
+            else:
+                assigned_user = None
+            project_name = task.project.name
+            task = utility.as_dict(task)
+            task['assigned'] = assigned_user
+            task['project'] = project_name
+            tasks_dict.append(task)
+    return JsonResponse({"tasks": tasks_dict})
 
 @group_required(const.LEAD)
 def delete_task(request):
@@ -383,3 +434,9 @@ def change_project_status(request):
         return JsonResponse({"message": "Status updated successfully."})
     except Exception as e:
         return JsonResponse({"error": "Project not found."}, status=404)
+
+def get_project_stages(request):
+    stages = []
+    for stage, value in const.PROJECT_STATUS.items():
+        stages.append(stage)
+    return JsonResponse({"stages": stages})

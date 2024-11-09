@@ -38,24 +38,25 @@
             {{ project.created }}
         </div>
     </div>
+    {% if project.manager == request.user.username %}
     <div class="d-flex justify-content-end mt-4">
-        <button class="btn btn-success me-1" data-bs-toggle="modal" data-bs-target="#taskModal">
+        <button class="btn btn-success me-1" data-bs-toggle="modal" onclick="create_task('{{ project.id }}')"   >
             <i class="fas fa-plus"></i> Add Task
         </button>
         <div class="row mb-1">
             <div class="col-md-12 text-start">
-                <select id="project-status-select" class="form-select" onchange="changeProjectStatus('{{ project.id }}')">
-                    <option value="DESIGN" {% if project.status == 'DESIGN' %}selected{% endif %}>DESIGN</option>
-                    <option value="DEV1" {% if project.status == 'DEV1' %}selected{% endif %}>DEV1</option>
-                    <option value="TEST1" {% if project.status == 'TEST1' %}selected{% endif %}>TEST1</option>
-                    <option value="DEV2" {% if project.status == 'DEV2' %}selected{% endif %}>DEV2</option>
-                    <option value="TEST2" {% if project.status == 'TEST2' %}selected{% endif %}>TEST2</option>
-                    <option value="FINAL" {% if project.status == 'FINAL' %}selected{% endif %}>FINAL</option>
-                    <option value="COMPLETE" {% if project.status == 'COMPLETE' %}selected{% endif %}>COMPLETE</option>
-                </select>
+                <select id="project-status-select" class="form-select" onchange="change_project_status('{{ project.id }}')"></select>
+                <script>
+                    function set_selected_option() {
+                        var project_status = "{{ project.status }}";
+                        var option = document.getElementById('id-'+project_status);
+                        option.selected = true;
+                    }
+                </script>
             </div>
         </div>
-    </div>     
+    </div>
+    {% endif %}
 </div>
 
 <!-- Task List Section -->
@@ -78,53 +79,6 @@
         </tbody>
     </table>
 </div>
-<!-- Modal for viewing full description -->
-<div class="modal fade" id="viewMoreModal" tabindex="-1" aria-labelledby="viewMoreModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="viewMoreModalLabel">Task Description</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="fullDescription"></p> <!-- Full description will be inserted here -->
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Task Creation Modal -->
-<div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="taskModalLabel">Create Task</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="taskForm">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="task-name" class="form-label">Task Name</label>
-                        <input type="text" class="form-control" id="task-name" name="task-name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="task-description" class="form-label">Task Description</label>
-                        <textarea class="form-control" id="task-description" name="task-description" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="task-due" class="form-label">Due Date</label>
-                        <input type="date" class="form-control" id="task-due" name="task-due" required>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="create_task('{{ project.id }}')">Create Task</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         setProjectStatusBadge("{{ project.status }}");

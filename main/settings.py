@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'lead.apps.LeadConfig',
     'peer.apps.PeerConfig',
     'manager.apps.ManagerConfig',
+    'marketing.apps.MarketingConfig',
 ]
 
 MIDDLEWARE = [

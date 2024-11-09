@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 urlpatterns = [
     path('', views.dashboard, name='manager'),
     path('create-task', views.create_task, name='manager-create-task'),
+    
     path('view-projects', views.list_projects, name='manager-list-projects'),
     path('view-project/<int:projectid>', views.view_project, name='manager-view-project'),
     path('delete-task/<int:projectid>/<int:taskid>/', views.delete_task, name='manager-delete-task'),

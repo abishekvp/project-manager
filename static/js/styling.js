@@ -8,6 +8,15 @@ const TASK_STATUS_COLORS = {
     'HOLD': 'background: red; color: white',
     'COMPLETE': 'background: #4BB543; color: white',
 };
+const LEAD_STATUS_COLORS = {
+    'TODO': 'background: gray; color: white',
+    'IN-PROGRESS': 'background: #0d6efd; color: white',
+    'VERIFY': 'background: lightblue; color: black',
+    'CORRECTION': 'background: #dc3545; color: white',
+    'HOLD': 'background: red; color: white',
+    'COMPLETE': 'background: #4BB543; color: white',
+};
+
 const STATUS_COLOR = {
     "DESIGN": "secondary",
     "DEVELOPMENT": "info",
@@ -41,4 +50,12 @@ function open_assign_project_form(projectid) {
     $('#assignProjectForm input[name="project_id"]').val(projectid);
     $('#manager-search-input').val('');
     $('#manager-search-results').empty();
+}
+
+function loading(){
+    document.getElementById("loader").style.display = "block";
+}
+
+function loaded(){
+    document.getElementById("loader").style.display = "none";
 }

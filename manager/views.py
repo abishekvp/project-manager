@@ -9,35 +9,39 @@ from django.http import JsonResponse
 from constants import constants as const
 from utils import utility as util
 
-@group_required(const.LEAD, const.MANAGER)
+@group_required(const.MANAGER)
 def dashboard(request):
     if request.user.is_authenticated:
         request.session['user_role'] = app_views.get_role(request)
         return render(request,'manager/dashboard.html', manager_dashboard(request))
     else: return redirect('signin')
 
-@group_required(const.LEAD, const.MANAGER)
+@group_required(const.MANAGER)
 def create_task(request):
     import datetime
     if request.method == 'POST':
-        task_name = request.POST['task-name']
-        task_description = request.POST['task-description']
-        projectid = request.POST['project_id']
-        due = request.POST['task-due']
-        project = app_models.Project.objects.filter(id=projectid).first()
-        task = app_models.Task.objects.create(
-            name=task_name,
-            description=task_description,
-            project=project,
-            status=const.TASK_TODO,
-            due=due
-        )
-        if not project.started:
-            import datetime
-            task.started = datetime.datetime.now()
-        project.save()
+        task_name = request.POST.get('task_name')
+        task_description = request.POST.get('task_description')
+        task_user = request.POST.get('task_user')
+        task_project = request.POST.get('task_project')
+        task_due = request.POST.get('task_due')
+        task = dict()
+        task['name'] = task_name
+        task['description'] = task_description
+        if task_project:
+            project = app_models.Project.objects.get(id=task_project)
+            if not project.started:
+                project.started = datetime.datetime.now()
+            project.save()
+            task['project'] = project
+        if task_user:
+            task['assigned_to'] = User.objects.get(id=task_user)
+        if task_due:
+            task['due'] = task_due
+        app_models.Task.objects.create(**task)
         return JsonResponse({'status': 200})
-    return render(request, 'manager/create_task.html')
+    else:
+        return JsonResponse({'status': 403})
 
 @group_required(const.LEAD, const.MANAGER)
 def list_projects(request):
@@ -47,8 +51,11 @@ def list_projects(request):
 def view_project(request, projectid):
     project = app_models.Project.objects.filter(id=projectid).first()
     request.session['project_id'] = projectid
-    project = util.as_dict(project)
-    return render(request, 'manager/view_project.html', {"project": project})
+    project_dict = util.as_dict(project)
+    if project.manager:
+        project_dict['manager'] = project.manager.username
+    print(project_dict)
+    return render(request, 'manager/view_project.html', {"project": project_dict})
 
 @group_required(const.LEAD, const.MANAGER)
 def change_project_status(request, projectid):

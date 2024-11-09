@@ -9,19 +9,12 @@
                 </li>
             </ul>
             <a class="nav-link p-3">
-                <select id="project-status-select" class="form-select" onchange="sort_project_by_status('{{ project.id }}')">
+                <select id="project-status-select" class="form-select" onchange="sort_project_by_status(this.value)">
                     <option value="ALL">ALL</option>
-                    <option value="DESIGN">DESIGN</option>
-                    <option value="DEVELOPMENT">DEVELOPMENT</option>
-                    <option value="REVIEW">REVIEW</option>
-                    <option value="CORRECTION">CORRECTION</option>
-                    <option value="UPDATE">UPDATE</option>
-                    <option value="FINAL">FINAL</option>
-                    <option value="COMPLETE">COMPLETE</option>
                 </select>
             </a>
             <form class="form-inline my-2 my-lg-0">
-                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                <input class="form-control mr-sm-2" type="search" id="search-projects-list" placeholder="Search" aria-label="Search">
             </form>
         </div>
     </nav>
@@ -49,5 +42,4 @@
         get_projects();
     };
 </script>
-
 {% endblock %}

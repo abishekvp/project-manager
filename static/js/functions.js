@@ -22,48 +22,27 @@ function getCookie(name) {
     return cookieValue;
 }
 
-function get_peers() {
+document.addEventListener("DOMContentLoaded", function() {
+    var selectElement = document.getElementById("project-status-select");
+    if (selectElement) {
+      addOptionsToSelect(selectElement);
+    }
+  });
+  function addOptionsToSelect(selectElement) {
     $.ajax({
-        type: "POST",
-        url: "/get-peers",
-        data: {
-            peer_name: $('#peer_name').val(),
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-        },
-        success: function (response) {
-            console.log(response['users'])
-        },
-    });
-};
-
-function get_projects() {
-    $.ajax({
-        type: "GET",
-        url: "/get-projects",
-        success: function (response) {
-            $(".projects_table_data").empty();
-            response["projects"].forEach(project => {
-                $(".projects_table_data").append(`
-                    <tr>
-                        <td>${project.id}</td>
-                        <td>${project.name}</td>
-                        <td>${project.created}</td>
-                        <td>${project.started}</td>
-                        <td>${project.updated}</td>
-                        <td>${project.due}</td>
-                        <td><span class="badge bg-${STATUS_COLOR[project.status]}">${project.status}</span></td>
-                        <td>
-                            <i class="fa-solid fa-up-right-from-square text-info px-1" onclick="view_project(${project.id})" style="cursor: pointer;" title="View"></i>
-                        </td>
-                    </tr>
-                `);
+        url: '/get-project-stages',
+        type: 'GET',
+        success: function(response){
+            response.stages.forEach(function(optionText) {
+              var option = document.createElement("option");
+              option.id = "id-"+optionText;
+              option.textContent = optionText;
+              selectElement.appendChild(option);
             });
-        },
-        error: function (xhr, status, error) {
-            alert("Failed to retrieve projects. Please try again.");
+            set_selected_option()
         }
     });
-};
+  }
 
 function convertUrlsToLinks(text) {
     const urlPattern = /(https?:\/\/[^\s]+)/g;
@@ -72,86 +51,6 @@ function convertUrlsToLinks(text) {
         let displayText = (new URL(url)).hostname;
         return `<a href="${url}" target="_blank">${displayText}</a>`;
     }).replace(/\n/g, '<br>');
-}
-
-function view_task_details(taskid) {
-    $.ajax({
-        type: "GET",
-        url: `/task-detail/`,
-        data: { taskid: taskid },
-        success: function (response) {
-            var myModal = new bootstrap.Modal(document.getElementById('detailTaskModal'));
-            myModal.show();
-            $('#detailTaskModalName').text(response.task.name);
-            $('#edit-task-btn').attr('id', response.task.id);
-            $('#detailTaskModalDescription').html(convertUrlsToLinks(response.task.description));
-            $('#detailTaskModalProject').text(response.task.project);
-            $('#detailTaskModalAssigned').text(response.task.assigned);
-            $('#detailTaskModalStatus').text(response.task.status);
-            $('#detailTaskModalDue').text(response.task.due);
-            if (response.task.pull_request){
-                $('#detailTaskModalPullRequest').html(convertUrlsToLinks(response.task.pull_request));
-            }
-            if (response.task.correction){
-                $('#detailTaskModalCorrection').html(convertUrlsToLinks(response.task.correction));
-            }
-            if (response.task.reason){
-                $('#detailTaskModalHold').html(convertUrlsToLinks(response.task.reason));
-            }
-            $('#detailTaskModalCreated').text(response.task.created);
-            $('#detailTaskModalStarted').text(response.task.started);
-            $('#detailTaskModalUpdated').text(response.task.updated);
-        },
-        error: function (error) {
-            console.error("Error searching users:", error);
-        }
-    });
-}
-
-function view_project(id) {
-    $.ajax({
-        type: "POST",
-        url: `/view-project`,
-        data: {
-            projectid: id,
-            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-        },
-        success: function (response) {
-            window.location.href = response.url;
-        },
-    });
-}
-
-$('#search-project-input').on('keyup', function() {
-    const query = $(this).val();
-    if (query.length > 2) {  // Trigger search when input has more than 2 characters
-        $.ajax({
-            type: "GET",
-            url: `/search-projects/`,
-            data: { query: query },
-            success: function (response) {
-                const searchResults = $('#search-project-results');
-                searchResults.empty();  // Clear previous search results
-
-                response.projects.forEach(project => {
-                    searchResults.append(
-                        `<li class="list-group-item" id="${project.id}" onclick="selectProjectForCreateTask(${project.id}, '${project.name}')">
-                            ${project.name}
-                        </li>`
-                    );
-                });
-            },
-            error: function (error) {
-                console.error("Error searching users:", error);
-            }
-        });
-    }
-})
-
-function selectProjectForCreateTask(project_id, project_name){
-    $('#projectCreateTask').val(project_id);
-    $('#search-project-input').val(project_name);
-    $('#search-project-results').empty();
 }
 
 $('#search-user-input').on('keyup', function() {
@@ -218,23 +117,6 @@ function selectUser(userId, username) {
     $('#user-search-results').empty();
 }
 
-function remove_project_manager(projectid){
-    const confirmation = confirm("Are you sure you want to remove the project manager?");
-    if (confirmation) {
-        $.ajax({
-            type: "POST",
-            url: `/lead/remove-project-manager`,
-            data: {
-                projectid: projectid,
-                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-            },
-            success: function (response) {
-                location.reload();
-            },
-        });
-    }
-}
-
 $('#manager-search-input').on('keyup', function() {
     const query = $(this).val();
     if (query.length > 2) {  // Trigger search when input has more than 2 characters
@@ -292,3 +174,129 @@ function test_mail_server() {
         }
     });
 };
+
+
+// projects
+function view_project(id) {
+    $.ajax({
+        type: "POST",
+        url: `/view-project`,
+        data: {
+            projectid: id,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function (response) {
+            window.location.href = response.url;
+        },
+    });
+}
+
+$('#search-project-input').on('keyup', function() {
+    const query = $(this).val();
+    if (query.length > 2) {  // Trigger search when input has more than 2 characters
+        $.ajax({
+            type: "GET",
+            url: `/search-projects/`,
+            data: { query: query },
+            success: function (response) {
+                const searchResults = $('#search-project-results');
+                searchResults.empty();  // Clear previous search results
+
+                response.projects.forEach(project => {
+                    searchResults.append(
+                        `<li class="list-group-item" id="${project.id}" onclick="selectProjectForCreateTask(${project.id}, '${project.name}')">
+                            ${project.name}
+                        </li>`
+                    );
+                });
+            },
+            error: function (error) {
+                console.error("Error searching users:", error);
+            }
+        });
+    }
+})
+
+function selectProjectForCreateTask(project_id, project_name){
+    $('#projectCreateTask').val(project_id);
+    $('#search-project-input').val(project_name);
+    $('#search-project-results').empty();
+}
+
+function get_project_stages(selectid){
+    alert(selectid)
+    $.ajax({
+        type: "GET",
+        url: "/get_project_stages",
+        success: function (response) {
+            $('#project-status').html(response);
+        },
+    });
+}
+
+function load_projects(projects){
+    $(".projects_table_data").empty();
+    projects.forEach(project => {
+        $(".projects_table_data").append(`
+            <tr>
+                <td>${project.id}</td>
+                <td>${project.name}</td>
+                <td>${project.created}</td>
+                <td>${project.started}</td>
+                <td>${project.updated}</td>
+                <td>${project.due}</td>
+                <td><span class="badge bg-${STATUS_COLOR[project.status]}">${project.status}</span></td>
+                <td>
+                    <i class="fa-solid fa-up-right-from-square text-info px-1" onclick="view_project(${project.id})" style="cursor: pointer;" title="View"></i>
+                </td>
+            </tr>
+        `);
+    });
+}
+
+function get_projects() {
+    $.ajax({
+        type: "GET",
+        url: "/get-projects",
+        success: function (response) {
+            load_projects(response.projects);
+        },
+        error: function (xhr, status, error) {
+            alert("Failed to retrieve projects. Please try again.");
+        }
+    });
+};
+
+$('#search-projects-list').on('keyup', function() {
+    const query = $(this).val();
+    if (query) {
+        $.ajax({
+            type: "GET",
+            url: `/search-projects-list/`,
+            data: { query: query },
+            success: function (response) {
+                load_projects(response.projects);
+            },
+            error: function (error) {
+                console.error("Error searching users:", error);
+            }
+        });
+    }
+    else{
+        get_projects();
+    }
+});
+
+function sort_project_by_status(status){
+    $.ajax({
+        type: "POST",
+        url: `/sort-projects-by-status`,
+        data: {
+            status: status,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function (response) {
+            load_projects(response.projects);
+        },
+    });
+}

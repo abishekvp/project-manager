@@ -98,6 +98,7 @@ def delete_project(request):
 
 @group_required(const.LEAD)
 def assign_project_manager(request):
+    import time
     if request.method == 'POST':
         project_id = request.POST.get('project_id')
         manager_id = request.POST.get('manager_id')
@@ -115,6 +116,21 @@ def remove_project_manager(request):
         project.manager = None
         project.save()
         return JsonResponse({'project_id': project_id})
+
+@group_required(const.LEAD)
+def view_projects(request):
+    return render(request, 'lead/list_projects.html')
+
+@group_required(const.LEAD)
+def view_project(request, projectid):
+    project = app_models.Project.objects.get(id=projectid)
+    manager = project.manager
+    project = util.as_dict(project)
+    if manager:
+        project['manager'] = manager.username
+    else:
+        project['manager'] = None
+    return render(request, 'lead/view_project.html', {"project": project})
 
 @group_required(const.LEAD)
 def create_task(request):
@@ -140,22 +156,6 @@ def create_task(request):
             task['due'] = task_due
         app_models.Task.objects.create(**task)
         return JsonResponse({'status': 200})
-    return render(request, 'lead/create_task.html')
-
-@group_required(const.LEAD)
-def view_projects(request):
-    return render(request, 'lead/list_projects.html')
-
-@group_required(const.LEAD)
-def view_project(request, projectid):
-    project = app_models.Project.objects.get(id=projectid)
-    manager = project.manager
-    project = util.as_dict(project)
-    if manager:
-        project['manager'] = manager.username
-    else:
-        project['manager'] = None
-    return render(request, 'lead/view_project.html', {"project": project})
 
 @group_required(const.LEAD)
 def delete_task(request, projectid, taskid):
@@ -176,6 +176,17 @@ def view_tasks(request):
             tasks_dict.append(task)
         return JsonResponse({'tasks': tasks_dict})
     return render(request, 'lead/view_tasks.html')
+
+def get_all_tasks_table(request):
+    tasks = app_models.Task.objects.all()
+    for task in tasks:
+        task_dict = util.as_dict(task)
+        if task.project:
+            task_dict["project"] = task.project.name
+        if task.assigned_to:
+            task_dict["assigned"] = task.assigned_to.username
+        tasks.append(task_dict)
+    return JsonResponse({"tasks": tasks})
 
 @group_required(const.LEAD)
 def lead_dashboard(request):
@@ -300,14 +311,3 @@ def search_manager(request):
     managers = User.objects.filter(username__icontains=query, groups__name=const.MANAGER, is_active=True)[:5]
     managers_list = [{'id': user.id, 'username': user.username} for user in managers]
     return JsonResponse({'managers': managers_list})
-
-def get_all_tasks_table(request):
-    tasks = app_models.Task.objects.all()
-    for task in tasks:
-        task_dict = util.as_dict(task)
-        if task.project:
-            task_dict["project"] = task.project.name
-        if task.assigned_to:
-            task_dict["assigned"] = task.assigned_to.username
-        tasks.append(task_dict)
-    return JsonResponse({"tasks": tasks})

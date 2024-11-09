@@ -60,3 +60,12 @@ class Profile(models.Model):
     phone = models.CharField(max_length=15, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
 
+class Lead(models.Model):
+    id = models.AutoField(primary_key=True)
+    client_name = models.CharField(max_length=64)
+    client_email = models.EmailField()
+    client_contact = models.CharField(max_length=15)
+    status = models.CharField(max_length=10, default="ACTIVE")
+    notes = models.TextField(null=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)

@@ -1,5 +1,5 @@
-function load_peer_tasks(tasks){
-    $(".peer_tasks_table_data").empty();
+function load_tasks(tasks){
+    $(".tasks_table_data").empty();
     tasks.forEach((task, index) => {
         setTimeout(function () {
             const statusOptions = `
@@ -12,11 +12,10 @@ function load_peer_tasks(tasks){
                     <option value="COMPLETE" ${task.status === 'COMPLETE' ? 'selected' : ''}>COMPLETE</option>
                 </select>
             `;
-            $(".peer_tasks_table_data").append(`
+            $(".tasks_table_data").append(`
                 <tr>
                     <td>${task.id}</td>
                     <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_details('${task.id}')" style="cursor: pointer;" title="Description"></i></td>
-                    <td>${task.project}</td>
                     <td>${task.created}</td>
                     <td>${task.started}</td>
                     <td>${task.updated}</td>
@@ -27,6 +26,25 @@ function load_peer_tasks(tasks){
         }, index * 50); // Delay each task by 200ms (adjust as needed)
     });
 }
+
+function load_tasks_for_view(tasks){
+    $(".tasks_table_data").empty();
+    tasks.forEach((task, index) => {
+        setTimeout(function () {
+            $(".tasks_table_data").append(`
+                <tr>
+                    <td>${task.id}</td>
+                    <td>${task.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_task_details('${task.id}')" style="cursor: pointer;" title="Description"></i></td>
+                    <td>${task.project}</td>
+                    <td>${task.created}</td>
+                    <td>${task.started}</td>
+                    <td>${task.updated}</td>
+                    <td>${task.due}</td>
+                    <td><span class="task-status-badge" style="${TASK_STATUS_COLORS[task.status]}">${task.status}</span></td>
+                </tr>
+            `);
+        }, index * 50); // Delay each task by 200ms (adjust as needed)
+    });}
 
 function get_peer_projects() {
     $.ajax({
@@ -56,12 +74,12 @@ function peer_view_project(id) {
     window.location.href = '/peer/view-project/' + id
 }
 
-function peer_view_tasks() {
+function get_peer_tasks() {
     $.ajax({
         type: "GET",
         url: "/peer/peer-tasks",
         success: function (response) {
-            load_peer_tasks(response["tasks"]);
+            load_tasks_for_view(response["tasks"]);
         },
     });
 }
@@ -92,7 +110,24 @@ function peersortTaskByStatus(status){
             csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
         },
         success: function (response) {
-            load_peer_tasks(response["tasks"]);
+            load_tasks_for_view(response["tasks"]);
         },
     });
 }
+
+
+function updateTaskStatus(taskId, newStatus) {
+    $.ajax({
+        type: "POST",
+        url: `/update-task-status`,
+        data: {
+            status: newStatus,
+            taskid: taskId,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+        },
+        success: function (response) {
+            setTaskStatusBadge(taskId, newStatus)
+            reload_project_task(response.projectid);
+        },
+    });
+};

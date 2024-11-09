@@ -7,13 +7,25 @@ TASK_STATUS = {
 }
 
 PROJECT_STATUS = {
-    'ACTIVE': 1,
-    'INACTIVE': 2,
-    'COMPLETED': 3,
-    'HOLD': 4,
-    'CANCELLED': 5,
-    'ALL': 6
+    'DESIGN': 1,
+    'DEVELOPMENT': 2,
+    'REVIEW': 3,
+    'CORRECTION': 4,
+    'UPDATE': 5,
+    'FINAL': 6,
+    'COMPLETE': 7,
+    'DEACTIVE': 8,
 }
+
+DEACTIVE = 'active'
+DESIGN = 'design'
+DEVELOPMENT = 'development'
+REVIEW = 'review'
+CORRECTION = 'correction'
+UPDATE = 'update'
+FINAL = 'final'
+COMPLETE = 'complete'
+
 
 ROLE = {
     'LEAD': 1,
@@ -67,6 +79,20 @@ PEER_NAV = {
     'View Tasks': 'view-tasks',
     'View Members': 'view-members',
 }
+
+MARKET_LEAD = [
+    'ACTIVE',
+    'HOT',
+    'COLD',
+    'CLIENT',
+    'INACTIVE',
+]
+
+ACTIVE = 'active'
+HOT = 'hot'
+COLD = 'cold'
+CLIENT = 'client'
+INACTIVE = 'inactive'
 
 
 def task_mail_context(task, user_name):
