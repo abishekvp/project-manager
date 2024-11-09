@@ -171,7 +171,6 @@ def get_task_list(request):
 
 def get_project_tasks(request):
     projectid = request.POST.get('projectid')
-    print(projectid)
     if get_role(request) == "peer":
         tasks = Task.objects.filter(project_id=projectid, assigned_to=request.user)
     else:

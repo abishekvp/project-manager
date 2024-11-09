@@ -125,18 +125,20 @@ def create_task(request):
         task_user = request.POST.get('task_user')
         task_project = request.POST.get('task_project')
         task_due = request.POST.get('task_due')
-        project = app_models.Project.objects.get(id=task_project)
-        task = app_models.Task.objects.create(
-            name=task_name,
-            description=task_description,
-            project=project,
-            assigned_to=User.objects.get(id=task_user),
-            status=const.TASK_TODO,
-            due=task_due
-        )
-        if not project.started:
-            project.started = datetime.datetime.now()
-        project.save()
+        task = dict()
+        task['name'] = task_name
+        task['description'] = task_description
+        if task_project:
+            project = app_models.Project.objects.get(id=task_project)
+            if not project.started:
+                project.started = datetime.datetime.now()
+            project.save()
+            task['project'] = project
+        if task_user:
+            task['assigned_to'] = User.objects.get(id=task_user)
+        if task_due:
+            task['due'] = task_due
+        app_models.Task.objects.create(**task)
         return JsonResponse({'status': 200})
     return render(request, 'lead/create_task.html')
 
