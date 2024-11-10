@@ -1,4 +1,6 @@
 from datetime import datetime, date
+from app.models import Project, Task
+from constants.constants import *
 
 def as_dict(obj):
     objdict = obj.__dict__.copy()  # Use copy to avoid modifying the original dict
@@ -19,3 +21,45 @@ def get_current_time():
 
 def format_date(date):
     return date.strftime("%Y-%m-%d")
+
+def project_statistics(request):
+    role = request.user.profile.role
+    if role == LEAD:
+        projects = Project.objects.all()
+        project_statistics = dict()
+        for project in projects:
+            tasks = Task.objects.filter(project=project)
+            project_completion = 0
+            total_task = 0
+            todo = 0
+            progress = 0
+            verify = 0
+            correction = 0
+            hold = 0
+            complete = 0
+            for task in tasks:
+                project_completion += TASK_SCORE[task.status]
+                total_task += 1
+                if task.status == TASK_HOLD:
+                    hold += 1
+                elif task.status == TASK_COMPLETE:
+                    complete += 1
+                elif task.status == TASK_TODO:
+                    todo += 1
+                elif task.status == TASK_CORRECTION:
+                    correction += 1
+                elif task.status == TASK_VERIFY:
+                    verify += 1
+                elif task.status == TASK_PROGRESS:
+                    progress += 1
+            project_statistics[project.name] = {
+                'percent': str(project_completion).split('.')[0] + '%',
+                'total_task': total_task,
+                'todo': todo,
+                'progress': progress,
+                'verify': verify,
+                'correction': correction,
+                'hold': hold,
+                'complete': complete
+            }
+    print(project_statistics)

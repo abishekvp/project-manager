@@ -176,11 +176,11 @@ def search_task(request):
         query = request.GET.get('query')
         role = get_role(request)
         if role == const.LEAD:
-            tasks = Task.objects.filter(name__icontains=query)
+            tasks = Task.objects.filter(Q(name__icontains=query) | Q(assigned_to__username__icontains=query) | Q(project__name__icontains=query) | Q(id__icontains=query))
         elif role == const.MANAGER:
-            tasks = Task.objects.filter(Q(name__icontains=query) & (Q(project__manager=request.user) | Q(assigned_to=request.user)))
+            tasks = Task.objects.filter((Q(project__manager=request.user) & (Q(name__icontains=query) | Q(assigned_to=request.user) | Q(assigned_to__username__icontains=query) | Q(project__name__icontains=query) | Q(id__icontains=query))))
         elif role == const.PEER:
-            tasks = Task.objects.filter(name__icontains=query, assigned_to=request.user)
+            tasks = Task.objects.filter(Q(assigned_to=request.user) & (Q(name__icontains=query) | Q(project__name__icontains=query) | Q(id__icontains=query)))
         tasks_dict = []
         for task in tasks:
             project_name = task.project.name
