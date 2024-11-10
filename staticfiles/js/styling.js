@@ -1,8 +1,8 @@
-const TASK_STATUS = ['TODO', 'IN-PROGRESS', 'VERIFY', 'CORRECTION', 'COMPLETE']
+const TASK_STATUS = ['TODO', 'PROGRESS', 'VERIFY', 'CORRECTION', 'COMPLETE']
 const PROJECT_STATUS = ["DESIGN", "DEV1", "TEST1", "DEV2", "TEST2", "FINAL", "COMPLETE"]
 const TASK_STATUS_COLORS = {
     'TODO': 'background: gray; color: white',
-    'IN-PROGRESS': 'background: #0d6efd; color: white',
+    'PROGRESS': 'background: #0d6efd; color: white',
     'VERIFY': 'background: lightblue; color: black',
     'CORRECTION': 'background: #dc3545; color: white',
     'HOLD': 'background: red; color: white',
@@ -10,7 +10,7 @@ const TASK_STATUS_COLORS = {
 };
 const LEAD_STATUS_COLORS = {
     'TODO': 'background: gray; color: white',
-    'IN-PROGRESS': 'background: #0d6efd; color: white',
+    'PROGRESS': 'background: #0d6efd; color: white',
     'VERIFY': 'background: lightblue; color: black',
     'CORRECTION': 'background: #dc3545; color: white',
     'HOLD': 'background: red; color: white',

@@ -250,10 +250,13 @@
                 {% if request.session.user_role == 'lead' %}
                 <button class="btn btn-primary" id="edit-task-btn" onclick="edit_task(this.id)">Edit Task</button>
                 {% endif %}
+                {% if request.session.user_role == 'manager' %}
+                <button class="btn btn-primary" id="edit-task-btn" onclick="edit_task(this.id)">Edit Task</button>
+                {% endif %}
             </div>
         </div>
     </div>
-    {% if request.session.user_role == 'lead' %}
+    {% if request.session.user_role == 'lead' or request.session.user_role == 'manager' %}
     <div class="modal fade detailTaskModal detailTaskModalEdit" id="detailTaskModalEdit" tabindex="-1" aria-labelledby="detailTaskModalEditLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">

@@ -19,7 +19,7 @@ function load_tasks(tasks){
             const statusOptions = `
                 <select onchange="update_task_status('${encodeURIComponent(JSON.stringify(task))}', this.value)" class="form-select task-status" id="${task.id}" style="${TASK_STATUS_COLORS[task.status]}">
                     <option value="TODO" ${task.status === 'TODO' ? 'selected' : ''}>TODO</option>
-                    <option value="IN-PROGRESS" ${task.status === 'IN-PROGRESS' ? 'selected' : ''}>IN PROGRESS</option>
+                    <option value="PROGRESS" ${task.status === 'PROGRESS' ? 'selected' : ''}>PROGRESS</option>
                     <option value="VERIFY" ${task.status === 'VERIFY' ? 'selected' : ''}>VERIFY</option>
                     <option value="CORRECTION" ${task.status === 'CORRECTION' ? 'selected' : ''}>CORRECTION</option>
                     <option value="HOLD" ${task.status === 'HOLD' ? 'selected' : ''}>HOLD</option>
@@ -267,6 +267,46 @@ function hold_task(){
     });
 }
 
+function edit_task(taskid) {
+    $('#detailTaskModal').modal('show');
+    $('#detailTaskModal').modal('hide');
+    $('#detailTaskModalEditName').val($('#detailTaskModalName').text())
+    $('#detailTaskModalEditDescription').val($('#detailTaskModalDescription').html())
+    $('#detailTaskModalEditProject').text($('#detailTaskModalProject').text())
+    $('#detailTaskModalEditAssigned').text($('#detailTaskModalAssigned').text())
+    $('#detailTaskModalEditStatus').text($('#detailTaskModalStatus').text())
+    $('#detailTaskModalEditDue').val($('#detailTaskModalDue').text())
+    $('#detailTaskModalEditPullRequest').val($('#detailTaskModalPullRequest').html())
+    $('#detailTaskModalEditCorrection').val($('#detailTaskModalCorrection').html())
+    $('#detailTaskModalEditHold').val($('#detailTaskModalHold').html())
+    $('#detailTaskModalEditCreated').text($('#detailTaskModalCreated').text())
+    $('#detailTaskModalEditStarted').text($('#detailTaskModalStarted').text())
+    $('#detailTaskModalEditUpdated').text($('#detailTaskModalUpdated').text())
+    $('#detailTaskModalEdit').modal('show');
+    $('#edit-task-btn').click(function(){
+        $.ajax({
+            url: '/update-task',
+            type: 'POST',
+            data: {
+                taskid: taskid,
+                name: $('#detailTaskModalEditName').val(),
+                description: $('#detailTaskModalEditDescription').val(),
+                due: $('#detailTaskModalEditDue').val(),
+                pull_request: $('#detailTaskModalEditPullRequest').val(),
+                correction: $('#detailTaskModalEditCorrection').val(),
+                hold: $('#detailTaskModalEditHold').val(),
+                csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+            },
+            success: function(response){
+                $('#detailTaskModalEdit').modal('hide');
+                if(response.redirect){
+                    window.location.reload()
+                }
+            },
+        });
+    })
+}
+
 // projects
 function change_project_status(projectId) {
     const selectedStatus = document.getElementById("project-status-select").value;
@@ -286,3 +326,4 @@ function change_project_status(projectId) {
         }
     });
 }
+

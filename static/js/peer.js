@@ -5,7 +5,7 @@ function load_tasks(tasks){
             const statusOptions = `
                 <select onchange="updatePeerTaskStatus('${encodeURIComponent(JSON.stringify(task))}', this.value)" class="form-select task-status" id="${task.id}" style="${TASK_STATUS_COLORS[task.status]}">
                     <option value="TODO" ${task.status === 'TODO' ? 'selected' : ''}>TODO</option>
-                    <option value="IN-PROGRESS" ${task.status === 'IN-PROGRESS' ? 'selected' : ''}>IN PROGRESS</option>
+                    <option value="PROGRESS" ${task.status === 'PROGRESS' ? 'selected' : ''}>PROGRESS</option>
                     <option value="VERIFY" ${task.status === 'VERIFY' ? 'selected' : ''}>VERIFY</option>
                     <option value="CORRECTION" ${task.status === 'CORRECTION' ? 'selected' : ''}>CORRECTION</option>
                     <option value="HOLD" ${task.status === 'HOLD' ? 'selected' : ''}>HOLD</option>
