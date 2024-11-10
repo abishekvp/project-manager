@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-sk%m#p69^#2##-nvoppd(pf==wb0gg-rby^p--=(9)6k@ct7%)
 DEBUG = False
 # SECURITY WARNING: don't run with debug turned on in production!
 
-ALLOWED_HOSTS = ['pythonanywhere.com', 'localhost', '127.0.0.1', 'supernatural-spooky-gravestone-r547xwvgwjqcv59-8000.app.github.dev']
+ALLOWED_HOSTS = ['daatstudios.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 # Application definition
 
