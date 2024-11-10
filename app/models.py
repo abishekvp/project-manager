@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User, BaseUserManager
 from django.db import models
+from django.utils import timezone
 
 class Project(models.Model):
     id = models.AutoField(primary_key=True)
@@ -10,7 +11,7 @@ class Project(models.Model):
     status = models.CharField(max_length=10, default="DESIGN")
     created = models.DateTimeField(auto_now_add=True)
     started = models.DateTimeField(null=True)
-    updated = models.DateTimeField(auto_now=True)
+    updated = models.DateTimeField(default=timezone.now)
     due = models.DateField(null=True)
 
 class Task(models.Model):
@@ -25,7 +26,7 @@ class Task(models.Model):
     reason = models.TextField(null=True)
     created = models.DateTimeField(auto_now_add=True)
     started = models.DateTimeField(null=True)
-    updated = models.DateTimeField(auto_now=True)
+    updated = models.DateTimeField(default=timezone.now)
     due = models.DateField(null=True)
 
 
@@ -68,4 +69,4 @@ class Lead(models.Model):
     status = models.CharField(max_length=10, default="ACTIVE")
     notes = models.TextField(null=True)
     created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
+    updated = models.DateTimeField(default=timezone.now)

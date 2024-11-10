@@ -443,7 +443,6 @@ def get_project_stages(request):
 
 @group_required(const.LEAD)
 def test(request):
-    from django.utils import timezone
     result = {}
     current_time = timezone.localtime(timezone.now())
     result['time'] = current_time
