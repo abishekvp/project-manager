@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from constants import constants as const
 from utils import utility as util
+from django.utils import timezone
 
 @group_required(const.MANAGER)
 def dashboard(request):
@@ -18,7 +19,6 @@ def dashboard(request):
 
 @group_required(const.MANAGER)
 def create_task(request):
-    import datetime
     if request.method == 'POST':
         task_name = request.POST.get('task_name')
         task_description = request.POST.get('task_description')
@@ -31,7 +31,7 @@ def create_task(request):
         if task_project:
             project = app_models.Project.objects.get(id=task_project)
             if not project.started:
-                project.started = datetime.datetime.now()
+                project.started = timezone.localtime(timezone.now())
             project.save()
             task['project'] = project
         if task_user:
@@ -71,8 +71,7 @@ def change_project_status(request, projectid):
                     messages.info(request, 'All tasks must be completed before marking project as complete.')
                     return JsonResponse({"error": "All tasks must be completed before marking project as complete."}, status=400)
             if not project.started:
-                import datetime
-                project.started = datetime.datetime.now()
+                project.started = timezone.localtime(timezone.now())
             project.save()
             return JsonResponse({"message": "Status updated successfully."})
         except Exception as e:

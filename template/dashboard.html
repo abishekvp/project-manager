@@ -32,6 +32,9 @@
                     <a class="nav-link {% if request.path == '/lead/admin-dashboard' %}active{% endif %}" href="{% url 'admin-dashboard' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Admin Dashboard</button></li>
                     </a>
+                    <a class="nav-link {% if request.path == 'test' %}active{% endif %}" href="{% url 'test' %}">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Test</button></li>
+                    </a>
                     {% endif %}
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == '/lead/' %}active{% endif %}" href="/lead/">

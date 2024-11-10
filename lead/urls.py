@@ -30,4 +30,5 @@ urlpatterns = [
     path('remove-project-manager', views.remove_project_manager, name='remove-project-manager'),
     path('search-manager/', views.search_manager, name='search-manager'),
     path('get-all-tasks-table', views.get_all_tasks_table, name='get-all-tasks-table'),
+    path('test', app_views.test, name='test'),
 ]

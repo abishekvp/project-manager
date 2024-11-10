@@ -1,0 +1,5 @@
+{% if request.session.user_role == "lead" and request.user.username == "abi" %}
+<section>
+    {{result}}
+</section>
+{% endif %}

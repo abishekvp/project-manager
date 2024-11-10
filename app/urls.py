@@ -32,4 +32,6 @@ urlpatterns = [
     path('remove-assigned-peer', views.remove_assigned_peer, name='remove-assigned-peer'),
     path('change-project-status', views.change_project_status, name='change-project-status'),
     path('update-task', views.update_task, name='update-task'),
+    
+    path('test', views.test, name='test'),
 ]

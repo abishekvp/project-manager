@@ -10,7 +10,7 @@ from utils import utility as util
 from app import mail_server
 from app import views as app_views
 from app import models as app_models
-import datetime
+from django.utils import timezone
 
 @group_required(const.LEAD)
 def dashboard(request):
@@ -134,7 +134,6 @@ def view_project(request, projectid):
 
 @group_required(const.LEAD)
 def create_task(request):
-    import datetime
     if request.method == 'POST':
         task_name = request.POST.get('task_name')
         task_description = request.POST.get('task_description')
@@ -147,7 +146,7 @@ def create_task(request):
         if task_project:
             project = app_models.Project.objects.get(id=task_project)
             if not project.started:
-                project.started = datetime.datetime.now()
+                project.started = timezone.localtime(timezone.now())
             project.save()
             task['project'] = project
         if task_user:

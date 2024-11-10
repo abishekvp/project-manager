@@ -10,7 +10,7 @@ from .models import Project, Task, Profile, Lead
 from django.db.models import Q
 from utils import utility
 from .mail_server import MailServer
-import datetime
+from django.utils import timezone
 # abiraj asrif420
 
 def index(request):
@@ -142,7 +142,7 @@ def create_task(request):
             due=due
         )
         if not project.started:
-            project.started = datetime.datetime.now()
+            project.started = timezone.localtime(timezone.now())
             project.save()
         print(project_id)
         return JsonResponse({'status': 200, 'project_id': project_id})
@@ -428,8 +428,8 @@ def change_project_status(request):
                 messages.info(request, 'All tasks must be completed before marking project as complete.')
                 return JsonResponse({"error": "All tasks must be completed before marking project as complete."}, status=400)
         if not project.started:
-            import datetime
-            project.started = datetime.datetime.now()
+            from django.utils import timezone
+            project.started = timezone.localtime(timezone.now())
         project.save()
         return JsonResponse({"message": "Status updated successfully."})
     except Exception as e:
@@ -440,3 +440,11 @@ def get_project_stages(request):
     for stage, value in const.PROJECT_STATUS.items():
         stages.append(stage)
     return JsonResponse({"stages": stages})
+
+@group_required(const.LEAD)
+def test(request):
+    from django.utils import timezone
+    result = {}
+    current_time = timezone.localtime(timezone.now())
+    result['time'] = current_time
+    return render(request, 'test.html', {'result': result})
