@@ -11,7 +11,7 @@ from django.db.models import Q
 from utils import utility
 from .mail_server import MailServer
 from django.utils import timezone
-# abiraj asrif420
+# abiraj asrif420 lkjh
 
 def index(request):
     if request.user.is_authenticated:
