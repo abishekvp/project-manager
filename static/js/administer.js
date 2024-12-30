@@ -124,6 +124,7 @@ function view_vendor_password(vendor_id){
                 csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
             },
             success: function(response) {
+                loaded()
                 if(response.status_code == 200){
                     $('#resetVendorPasswordModal').modal('hide');
                     $('#vendorPasswordModal').modal('show');
@@ -148,6 +149,10 @@ function view_vendor_password(vendor_id){
                             success: function(response) {
                                 loaded()
                                 window.location.reload();
+                            },
+                            error: function(xhr, status, error) {
+                                loaded()
+                                window.location.reload();
                             }
                         });
                     });
@@ -156,6 +161,10 @@ function view_vendor_password(vendor_id){
                     window.location.reload()
                 }
                 loaded()
+            },
+            error: function(response){
+                loaded()
+                window.location.reload()
             }
         });
     })
