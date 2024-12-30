@@ -39,7 +39,7 @@ function load_tasks(tasks){
                     <td>${taskActions}</td>
                 </tr>`
             );
-        }, index * 20);
+        }, 0);
     });
 }
 

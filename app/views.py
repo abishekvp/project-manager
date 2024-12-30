@@ -78,14 +78,16 @@ def signin(request):
             filter_dict['email'] = username
         else: filter_dict['username'] = username
         user = User.objects.filter(**filter_dict).first()
-        if user and not user.is_superuser:
+        if user:
             username = user.username
-            if not user.is_active: messages.error(request, 'User needs to be approved')
+            if not user.is_active:
+                messages.error(request, 'User needs to be approved')
             elif authenticate(request, username=username, password=password):
                 login(request, user)
                 role = get_role(request)
                 request.session['user_role'] = role
                 return redirect(role)
+            else: messages.error(request, 'Invalid username or password')
         else: messages.error(request, 'User not found')
         return redirect("signin")
     else: return render(request,'signin.html')
@@ -144,7 +146,6 @@ def create_task(request):
         if not project.started:
             project.started = timezone.localtime(timezone.now())
             project.save()
-        print(project_id)
         return JsonResponse({'status': 200, 'project_id': project_id})
     return render(request, 'manager/create_task.html')
 

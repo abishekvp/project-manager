@@ -23,11 +23,14 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('asrif420-value/', admin.site.urls),
-    path('',include('app.urls')),
-    path('lead/',include('lead.urls')),
-    path('peer/',include('peer.urls')),
-    path('manager/',include('manager.urls')),
-    path('marketing/',include('marketing.urls')),
+    path('', include('app.urls')),
+    path('lead/', include('lead.urls')),
+    path('peer/', include('peer.urls')),
+    path('manager/', include('manager.urls')),
+    path('marketing/', include('marketing.urls')),
+    path('api/', include('api.urls')),
+    path('vendor/', include('vendor.urls')),
+    path('administer/', include('administer.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

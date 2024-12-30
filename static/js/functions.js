@@ -252,7 +252,7 @@ function load_projects(projects){
                     </td>
                 </tr>
             `);
-        }, index * 20);
+        }, 0);
     });
 }
 

@@ -1,6 +1,7 @@
-from django.contrib.auth.models import User, BaseUserManager
+from django.utils.timezone import now, timedelta
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User, BaseUserManager
 
 class Project(models.Model):
     id = models.AutoField(primary_key=True)
@@ -70,3 +71,18 @@ class Lead(models.Model):
     notes = models.TextField(null=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(default=timezone.now)
+
+class IPAddress(models.Model):
+    ip = models.GenericIPAddressField(unique=True)  # Store IPv4/IPv6
+    request_count = models.IntegerField(default=0)  # Number of requests
+    blocked_until = models.DateTimeField(null=True, blank=True)  # Block expiry time
+
+    def is_blocked(self):
+        """Check if the IP is currently blocked."""
+        return self.blocked_until and self.blocked_until > now()
+
+    def reset_block(self):
+        """Reset block status."""
+        self.request_count = 0
+        self.blocked_until = None
+        self.save()

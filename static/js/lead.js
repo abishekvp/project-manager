@@ -39,7 +39,7 @@ function load_tasks(tasks){
                     <td>${taskActions}</td>
                 </tr>`
             );
-        }, index * 20);
+        }, 0);
     });
 }
 
@@ -61,7 +61,7 @@ function load_tasks_for_view(tasks){
                     <td>${task.assigned}</td>
                 </tr>`
             );
-        }, index * 20);
+        }, 0);
     });
 }
 
@@ -425,7 +425,7 @@ function load_members(members) {
                     <td>${actions}</td>
                 </tr>
             `);
-        }, index * 20);
+        }, 0);
     });
 }
 

@@ -39,6 +39,8 @@ ALL = 'all'
 PEER = 'peer'
 LEAD = 'lead'
 MANAGER = 'manager'
+VENDOR = 'vendor'
+ADMINISTER = 'administer'
 
 TASK_TODO = 'TODO'
 TASK_PROGRESS = 'PROGRESS'

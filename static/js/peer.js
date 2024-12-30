@@ -23,7 +23,7 @@ function load_tasks(tasks){
                     <td>${statusOptions}</td>
                 </tr>
             `);
-        }, index * 20); // Delay each task by 200ms (adjust as needed)
+        }, 0); // Delay each task by 200ms (adjust as needed)
     });
 }
 
@@ -43,7 +43,7 @@ function load_tasks_for_view(tasks){
                     <td><span class="task-status-badge" style="${TASK_STATUS_COLORS[task.status]}">${task.status}</span></td>
                 </tr>
             `);
-        }, index * 20); // Delay each task by 200ms (adjust as needed)
+        }, 0); // Delay each task by 200ms (adjust as needed)
     });}
 
 function get_peer_projects() {
@@ -65,7 +65,7 @@ function get_peer_projects() {
                             <td><span class="badge bg-${STATUS_COLOR[project.status]}">${project.status}</span></td>
                         </tr>
                     `);
-                }, index * 20);
+                }, 0);
             });
         },
     });

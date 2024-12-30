@@ -23,7 +23,7 @@ function loads_maketing_leads(leads){
                     <td>${statusOptions}</td>
                 </tr>`
             );
-        }, index * 20);
+        }, 0);
     });   
 }
 

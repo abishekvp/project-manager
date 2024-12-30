@@ -12,6 +12,7 @@ from app import views as app_views
 from app import models as app_models
 from django.utils import timezone
 
+
 @group_required(const.LEAD)
 def dashboard(request):
     if request.user.is_authenticated:
@@ -19,11 +20,13 @@ def dashboard(request):
         return render(request,'lead/dashboard.html', lead_dashboard(request))
     else: return redirect('signin')
 
+
 def admin_dashboard(request):
     if request.user.is_authenticated and request.session['user_role'] == const.LEAD and request.user.is_staff and request.user.username == 'abi':
         return render(request, 'lead/admin-dashboard.html')
     else:
         return redirect('/signout')
+
 
 @group_required(const.LEAD)
 def view_members(request):
@@ -48,6 +51,8 @@ def view_members(request):
                 filter_query &= Q(groups__name=const.MANAGER)
             elif status == const.PEER:
                 filter_query &= Q(groups__name=const.PEER)
+        filter_query &= ~Q(groups__name=const.VENDOR)
+        filter_query &= ~Q(groups__name=const.ADMINISTER)
         users = User.objects.filter(filter_query).exclude(is_superuser=True)
         for user in users:
             user_dict = util.as_dict(user)
@@ -55,6 +60,7 @@ def view_members(request):
             members.append(user_dict)
         return JsonResponse({'members': members})
     return render(request, 'lead/view_members.html')
+
 
 @group_required(const.LEAD)
 def delete_member(request):

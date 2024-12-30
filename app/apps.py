@@ -17,6 +17,8 @@ def create_default_groups(sender, **kwargs):
     Group.objects.get_or_create(name=const.LEAD)
     Group.objects.get_or_create(name=const.PEER)
     Group.objects.get_or_create(name=const.MANAGER)
+    Group.objects.get_or_create(name=const.VENDOR)
+    Group.objects.get_or_create(name=const.ADMINISTER)
 
 def config_mail_server():
     from .mail_server import MailServer

@@ -22,7 +22,10 @@
             </div>
         </div>
     </nav>
-
+    
+    {% if request.session.user_role == 'vendor' %}
+    {% block vendor %}{% endblock %}
+    {% else %}
     <div class="row flex-nowrap">
         <nav class="col-md-3 col-lg-2 d-md-block sidebar bg-dark" style="position: fixed; top: 75px; left: 0; height: calc(100vh - 75px); overflow-y: auto;">
             <div class="position-sticky" id="navbarNav">
@@ -85,6 +88,10 @@
                     <a class="nav-link {% if 'profile' in request.path %}active{% endif %}" href="{% url 'profile' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Profile</button></li>
                     </a>
+                    {% elif request.session.user_role == 'administer' %}
+                    <a class="nav-link {% if request.path == '/administer/' %}active{% endif %}" href="/administer/">
+                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Vendors</button></li>
+                    </a>
                     {% endif %}
                 </ul>                
             </div>
@@ -97,5 +104,6 @@
             {% endblock %}
         </main>
     </div>
+    {% endif %}
 </section>
 {% endblock %}
