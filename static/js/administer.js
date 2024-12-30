@@ -43,10 +43,10 @@ function load_vendors(vendors){
                     
             vendorsTableBody.append(
                 `<tr>
-                    <td>${vendor.name}</td>
+                    <td>${vendor.name} <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_token('${vendor.id}')" style="cursor: pointer;" title="View Token"></i></td>
                     <td>${vendor.email}</td>
                     <td>${vendor.phone}</td>
-                    <td>Change Password <i class="fas fa-file-alt text-primary me-3 px-1" onclick="view_vendor_password('${vendor.id}')" style="cursor: pointer;" title="View Password"></i></td>
+                    <td>Change Password <i class="fas fa-key text-primary me-3 px-1" onclick="view_vendor_password('${vendor.id}')" style="cursor: pointer;" title="View Password"></i></td>
                     <td>${vendorActions}</td>
                 </tr>`
             );
@@ -160,4 +160,25 @@ function view_vendor_password(vendor_id){
         });
     })
     $('#resetVendorPasswordModal').modal('hide');
+}
+
+function view_token(vendor_id){
+    loading()
+    $.ajax({
+        type: "POST",
+        url: "/administer/get-vendor-token",
+        data: {
+            vendor_id: vendor_id,
+            csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val()
+        },
+        success: function(response) {
+            loaded()
+            $('#vendorTokenModal').modal('show');
+            $('#vendor-token').text(response.token);
+        },
+        error: function(response){
+            loaded()
+            window.location.reload()
+        }
+    });
 }

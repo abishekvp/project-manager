@@ -3,6 +3,8 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib import messages
 import constants.constants as const
+from api.models import TokenUser
+from utils.utility import generate_token
 
 # Create your views here.
 def index(request):
@@ -30,6 +32,8 @@ def add_vendor(request):
             group = Group.objects.all().filter(name=const.VENDOR).first()
             user.groups.add(group)
             Profile.objects.create(user=user, phone=phone)
+            token = generate_token()
+            TokenUser.objects.create(user=user, token=token)
             messages.success(request, 'User created successfully')
             return redirect('administer')
     else:
@@ -130,3 +134,21 @@ def change_vendor_password(request):
         user.save()
         messages.success(request, 'Vendor password changed successfully')
         return JsonResponse({'status_code': 200, 'message': 'Vendor password changed successfully'})
+    else:
+        return JsonResponse({'status_code': 403, 'error': 'Unauthorized access'})
+
+
+def get_vendor_token(request):
+    if request.user.is_authenticated:
+        vendor_id = request.POST.get('vendor_id')
+        if not vendor_id:
+            messages.error(request, 'Vendor ID is required')
+            return JsonResponse({'status_code': 404, 'message': 'Vendor ID is required'})
+        user = User.objects.filter(id=vendor_id).first()
+        if not user:
+            messages.error(request, 'Vendor not found')
+            return JsonResponse({'status_code': 404, 'message': 'Vendor not found'})
+        token = TokenUser.objects.filter(user=user).first().token
+        return JsonResponse({'status_code': 200, 'message': 'Token fetched successfully', 'token': token})
+    else:
+        return JsonResponse({'status_code': 403, 'error': 'Unauthorized access'})

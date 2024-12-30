@@ -62,4 +62,15 @@ def project_statistics(request):
                 'hold': hold,
                 'complete': complete
             }
-    print(project_statistics)
+
+def generate_token():
+    import random
+    import string
+    from datetime import datetime
+    timestamp = datetime.now().strftime('%f%S%H%M%Y%m%d')
+    random_part = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+    mixed_token = ''
+    for t_char, r_char in zip(timestamp, random_part):
+        mixed_token += t_char + r_char
+    mixed_token += timestamp[len(random_part):] + random_part[len(timestamp):]
+    return mixed_token

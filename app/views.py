@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import Group
 from django.contrib.auth.models import User
 from constants import constants as const
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 from .models import Project, Task, Profile, Lead
 from django.db.models import Q
@@ -15,11 +15,8 @@ from django.utils import timezone
 
 def index(request):
     if request.user.is_authenticated:
-        try:
-            request.session['user_role'] = get_role(request)
-            return redirect(get_role(request))
-        except:
-            return redirect('/signout')
+        request.session['user_role'] = get_role(request)
+        return redirect(get_role(request))
     else:
         return redirect('signin')
 
@@ -37,10 +34,14 @@ def get_role(request):
         try:
             role = request.user.groups.all()[0].name
             role = role.lower()
-            return role
+            if role:
+                return role
+            else:
+                messages.error(request, 'User role not found')
+                return redirect('signin')
         except:
-            messages.error(request, 'User not found')
-            return "/signout"
+            messages.error(request, 'User role not found')
+            return redirect('signin')
     else:
         return "/signin"
 
@@ -93,7 +94,9 @@ def signin(request):
     else: return render(request,'signin.html')
 
 def signout(request):
-    if request.user.is_authenticated:logout(request)
+    if request.user.is_authenticated:
+        # return redirect('/')
+        logout(request)
     return redirect('signin')
 
 @login_required(login_url='/signin')
@@ -444,7 +447,4 @@ def get_project_stages(request):
 
 @group_required(const.LEAD)
 def test(request):
-    result = {}
-    current_time = timezone.localtime(timezone.now())
-    result['time'] = current_time
-    return render(request, 'test.html', {'result': result})
+    return HttpResponse("Success")

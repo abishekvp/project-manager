@@ -3,7 +3,7 @@ from django.shortcuts import render
 # Create your views here.
 def index(request):
     from api.models import Messages
-    customer_messages = Messages.objects.all()
+    customer_messages = Messages.objects.filter(user=request.user)
     list_messages = []
     for message in customer_messages:
         list_messages.append({

@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-sk%m#p69^#2##-nvoppd(pf==wb0gg-rby^p--=(9)6k@ct7%)'
 
-DEBUG = False
+DEBUG = True
 # SECURITY WARNING: don't run with debug turned on in production!
 
 ALLOWED_HOSTS = ['daatstudios.pythonanywhere.com', 'localhost', '127.0.0.1']
@@ -39,12 +39,12 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'app.middleware.RestrictIPMiddleware',
+    # 'app.middleware.RestrictIPMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'app.middleware.RestrictMobileMiddleware',
+    # 'app.middleware.RestrictMobileMiddleware',
 ]
 
 ROOT_URLCONF = 'main.urls'
@@ -116,9 +116,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-ADMINS = [('abiraj', 'abirajvp@gmail.com')]
+STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

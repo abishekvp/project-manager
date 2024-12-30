@@ -10,5 +10,6 @@ urlpatterns = [
     path('delete-vendor', views.delete_vendor, name='delete-vendor'),
 
     path('get-vendor-password', views.get_vendor_password, name='get-vendor-password'),
+    path('get-vendor-token', views.get_vendor_token, name='get-vendor-token'),
     path('change-vendor-password', views.change_vendor_password, name='change-vendor-password'),
 ]

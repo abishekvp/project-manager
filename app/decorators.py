@@ -14,6 +14,6 @@ def group_required(*group_names):
         def wrapper(request, *args, **kwargs):
             if in_groups(request.user):
                 return view_function(request, *args, **kwargs)
-            return redirect('/signout')
+            return redirect('/')
         return wrapper
     return decorator
