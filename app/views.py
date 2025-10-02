@@ -15,8 +15,11 @@ from django.utils import timezone
 
 def index(request):
     if request.user.is_authenticated:
-        request.session['user_role'] = get_role(request)
-        return redirect(get_role(request))
+        if request.user.is_superuser:
+            return redirect('admin:index')
+        role = get_role(request)
+        request.session['user_role'] = role
+        return redirect(role)
     else:
         return redirect('signin')
 
@@ -30,20 +33,19 @@ def csrf_error_view(request, exception):
     return render(request, '403.html', status=403)
 
 def get_role(request):
-    if request.user.is_authenticated:
-        try:
-            role = request.user.groups.all()[0].name
-            role = role.lower()
-            if role:
-                return role
-            else:
-                messages.error(request, 'User role not found')
-                return redirect('signin')
-        except:
-            messages.error(request, 'User role not found')
-            return redirect('signin')
-    else:
-        return "/signin"
+    if not request.user.is_authenticated:
+        return 'signin'
+    if request.user.is_superuser:
+        return 'admin:index'
+    try:
+        group = request.user.groups.first()
+        if group and group.name:
+            return group.name.lower()
+        messages.error(request, 'User role not found')
+        return 'signin'
+    except Exception:
+        messages.error(request, 'User role not found')
+        return 'signin'
 
 def signup(request):
     if request.user.is_authenticated:return render(request,'index.html')
@@ -85,6 +87,8 @@ def signin(request):
                 messages.error(request, 'User needs to be approved')
             elif authenticate(request, username=username, password=password):
                 login(request, user)
+                if request.user.is_superuser:
+                    return redirect('admin:index')
                 role = get_role(request)
                 request.session['user_role'] = role
                 return redirect(role)
@@ -447,4 +451,4 @@ def get_project_stages(request):
 
 @group_required(const.LEAD)
 def test(request):
-    return HttpResponse("Success")
+    return HttpResponse("Nothing in test")

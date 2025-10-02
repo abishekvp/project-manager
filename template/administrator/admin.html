@@ -2,7 +2,6 @@
 {% load static %}
 {% block title %}Administer{% endblock title %}
 {% block dashboard %}
-    {% if request.session.user_role == 'administer' %}
         <div class="table-responsive mt-4">
             <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -135,9 +134,4 @@
             </div>
         </div>
         <script src="{% static 'js/administer.js' %}"></script>
-    {% else %}
-        <script>
-            window.location.href = '/';
-        </script>
-    {% endif %}
 {% endblock %}

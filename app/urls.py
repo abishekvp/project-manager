@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    
     path('', views.index,name="index"),
     path('access-restricted', views.access_restricted, name='access-restricted'),
     path('signup', views.signup,name="signup"),

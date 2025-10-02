@@ -22,7 +22,7 @@ def dashboard(request):
 
 
 def admin_dashboard(request):
-    if request.user.is_authenticated and request.session['user_role'] == const.LEAD and request.user.is_staff and request.user.username == 'abi':
+    if request.user.is_authenticated and (request.session.get('user_role') == const.LEAD or request.user.is_superuser) and request.user.is_staff:
         return render(request, 'lead/admin-dashboard.html')
     else:
         return redirect('/signout')

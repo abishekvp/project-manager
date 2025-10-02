@@ -10,7 +10,7 @@ from utils.utility import generate_token
 def index(request):
     if request.user.is_authenticated:
         users = User.objects.filter(groups__name=const.VENDOR)
-        return render(request, 'admin/index.html', {'users': users})
+        return render(request, 'administrator/admin.html', {'users': users})
     else:
         return redirect('signin')
 

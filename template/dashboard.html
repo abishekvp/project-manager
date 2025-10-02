@@ -30,8 +30,8 @@
         <nav class="col-md-3 col-lg-2 d-md-block sidebar bg-dark" style="position: fixed; top: 75px; left: 0; height: calc(100vh - 75px); overflow-y: auto;">
             <div class="position-sticky" id="navbarNav">
                 <ul class="nav flex-column">
-                    {% if request.session.user_role == 'lead' %}
-                    {% if request.user.username == 'abi' %}
+                    {% if request.session.user_role == 'lead' or request.user.is_superuser %}
+                    {% if request.user.is_superuser or request.user.username == 'abi' %}
                     <a class="nav-link {% if request.path == '/lead/admin-dashboard' %}active{% endif %}" href="{% url 'admin-dashboard' %}">
                         <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Admin Dashboard</button></li>
                     </a>
