@@ -20,9 +20,11 @@ from django.conf.urls import handler404, handler403
 from app import views as app_views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('favicon.ico', RedirectView.as_view(url='/static/img/django-python-logo.png')),
     path('', include('app.urls')),
     path('lead/', include('lead.urls')),
     path('peer/', include('peer.urls')),

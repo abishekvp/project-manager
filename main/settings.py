@@ -16,7 +16,7 @@ Path(BASE_DIR / 'staticfiles').mkdir(parents=True, exist_ok=True)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-dev-key-change-in-production')
 
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 # SECURITY WARNING: don't run with debug turned on in production!
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
@@ -189,19 +189,9 @@ LOGGING = {
         'level': 'INFO' if not DEBUG else 'DEBUG',
     },
     'loggers': {
-        'django': {
-            'handlers': ['console', 'file'] if not DEBUG else ['console'],
-            'level': 'INFO' if not DEBUG else 'DEBUG',
-            'propagate': False,
-        },
         'django.request': {
             'handlers': ['file'] if not DEBUG else ['console'],
             'level': 'ERROR',
-            'propagate': False,
-        },
-        'django.db.backends': {
-            'handlers': ['console'] if DEBUG else [],
-            'level': 'DEBUG',
             'propagate': False,
         },
     },
