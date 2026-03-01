@@ -7,28 +7,67 @@
             <div class="card bg-dark text-white"> <!-- Use bg-dark for dark background -->
                 <div class="card-body">
                     <h4 class="card-title text-center">Profile</h4>
-                    
+
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
                         <p class="form-control bg-secondary text-white">{{ user.username }}</p> <!-- Dark input field -->
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
                         <p class="form-control bg-secondary text-white">{{ user.email }}</p>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="first_name" class="form-label">First Name</label>
                         <p class="form-control bg-secondary text-white">{{ user.first_name }}</p>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="last_name" class="form-label">Last Name</label>
                         <p class="form-control bg-secondary text-white">{{ user.last_name }}</p>
                     </div>
-                    
+
                     <a href="{% url 'edit-profile' %}" class="btn btn-outline-primary">Edit Profile</a> <!-- Changed to outline-light -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2FA Section -->
+    <div class="row mt-4">
+        <div class="col-md-6 offset-md-3">
+            <div class="card bg-dark text-white">
+                <div class="card-body">
+                    <h4 class="card-title text-center d-flex align-items-center justify-content-center gap-2">
+                        <i class="fas fa-shield-alt"></i> Two-Factor Authentication
+                    </h4>
+
+                    <div class="mb-3">
+                        <label class="form-label">2FA Status</label>
+                        <p class="form-control bg-secondary text-white">
+                            {% if 2fa.is_enabled %}
+                                <span class="badge bg-success">Enabled</span>
+                                <span class="text-info">Method: {{ 2fa.get_method_display }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Disabled</span>
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    {% if 2fa.is_enabled %}
+                        <div class="alert alert-info alert-sm">
+                            <i class="fas fa-info-circle"></i> Your account is protected with 2FA. You will need a verification code to login.
+                        </div>
+                        <a href="{% url 'disable_2fa' %}" class="btn btn-sm btn-outline-danger w-100">Disable 2FA</a>
+                    {% else %}
+                        <div class="alert alert-warning alert-sm">
+                            <i class="fas fa-exclamation-triangle"></i> Enable 2FA to enhance your account security.
+                        </div>
+                        <a href="{% url 'enable_2fa' %}" class="btn btn-sm btn-outline-success w-100">
+                            <i class="fas fa-lock"></i> Enable 2FA
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>

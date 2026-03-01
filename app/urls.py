@@ -2,12 +2,19 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    
+
     path('', views.index,name="index"),
     path('access-restricted', views.access_restricted, name='access-restricted'),
     path('signup', views.signup,name="signup"),
     path('signin/', views.signin,name="signin"),
     path('signout/', views.signout,name="signout"),
+    path('verify-2fa-login', views.verify_2fa_login, name='verify_2fa_login'),
+    path('forgot-password', views.forgot_password, name='forgot_password'),
+    path('verify-otp', views.verify_otp, name='verify_otp'),
+    path('reset-password', views.reset_password, name='reset_password'),
+    path('enable-2fa', views.enable_two_factor_auth, name='enable_2fa'),
+    path('disable-2fa', views.disable_two_factor_auth, name='disable_2fa'),
+    path('2fa-backup-codes', views.two_factor_backup_codes, name='profile_2fa_backup_codes'),
     path('search-users/', views.search_users, name='search-users'),
     path('search-projects/', views.search_projects, name='search-projects'),
     path('create-task', views.create_task, name='create-task'),
@@ -33,6 +40,6 @@ urlpatterns = [
     path('remove-assigned-peer', views.remove_assigned_peer, name='remove-assigned-peer'),
     path('change-project-status', views.change_project_status, name='change-project-status'),
     path('update-task', views.update_task, name='update-task'),
-    
+
     path('test', views.test, name='test'),
 ]

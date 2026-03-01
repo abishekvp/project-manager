@@ -86,3 +86,49 @@ class IPAddress(models.Model):
         self.request_count = 0
         self.blocked_until = None
         self.save()
+
+class OTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    otp_code = models.CharField(max_length=6)
+    purpose = models.CharField(max_length=20, choices=[
+        ('password_reset', 'Password Reset'),
+        ('email_verification', 'Email Verification'),
+        ('two_factor_auth', 'Two Factor Authentication')
+    ])
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    def is_valid(self):
+        """Check if OTP is still valid and not used."""
+        return not self.is_used and timezone.now() < self.expires_at
+
+    class Meta:
+        ordering = ['-created_at']
+
+class TwoFactorAuth(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='two_factor_auth')
+    is_enabled = models.BooleanField(default=False)
+    method = models.CharField(max_length=20, choices=[
+        ('email_otp', 'Email OTP'),
+        ('authenticator', 'Authenticator App')
+    ], default='email_otp')
+    backup_codes = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def get_backup_codes(self):
+        """Get list of backup codes."""
+        if self.backup_codes:
+            return self.backup_codes.split(',')
+        return []
+
+    def use_backup_code(self, code):
+        """Use a backup code."""
+        codes = self.get_backup_codes()
+        if code in codes:
+            codes.remove(code)
+            self.backup_codes = ','.join(codes)
+            self.save()
+            return True
+        return False

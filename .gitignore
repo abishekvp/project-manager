@@ -75,3 +75,6 @@ coverage.xml
 # Temporary files
 *.temp
 *~
+
+tmpclaude-*
+nul

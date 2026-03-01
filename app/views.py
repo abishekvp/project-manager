@@ -11,6 +11,7 @@ from django.db.models import Q
 from utils import utility
 from .mail_server import MailServer
 from django.utils import timezone
+from .forms import ForgotPasswordForm, VerifyOTPForm, ResetPasswordForm, TwoFactorAuthForm, VerifyTwoFactorForm
 # abiraj asrif420
 
 def index(request):
@@ -73,7 +74,7 @@ def signup(request):
 
 def signin(request):
     if request.user.is_authenticated:return render(request,'index.html')
-    elif request.method == 'POST':    
+    elif request.method == 'POST':
         username = str(request.POST["username"]).lower()
         password = request.POST["password"]
         filter_dict = {}
@@ -86,6 +87,33 @@ def signin(request):
             if not user.is_active:
                 messages.error(request, 'User needs to be approved')
             elif authenticate(request, username=username, password=password):
+                # Check if 2FA is enabled
+                try:
+                    two_factor_auth = user.two_factor_auth
+                    if two_factor_auth.is_enabled:
+                        # Send OTP and store user_id in session for 2FA verification
+                        otp = utility.create_otp_for_user(user, 'two_factor_auth')
+
+                        # Send OTP via email
+                        mailserver = MailServer()
+                        context = {
+                            'subject': 'Your 2FA Code',
+                            'message': f'''<html><body>
+                            <h2>Two-Factor Authentication</h2>
+                            <p>Your 2FA code is: <strong>{otp.otp_code}</strong></p>
+                            <p>This code is valid for 10 minutes.</p>
+                            </body></html>'''
+                        }
+                        mailserver.send_mail(to_mail=user.email, subject=context['subject'], message=context['message'])
+
+                        request.session['2fa_user_id'] = user.id
+                        request.session['2fa_temp_user'] = user.username
+                        messages.info(request, 'OTP sent to your email. Please verify to continue.')
+                        return redirect('verify_2fa_login')
+                except:
+                    pass
+
+                # 2FA not enabled, proceed with login
                 login(request, user)
                 if request.user.is_superuser:
                     return redirect('admin:index')
@@ -102,6 +130,244 @@ def signout(request):
         # return redirect('/')
         logout(request)
     return redirect('signin')
+
+def verify_2fa_login(request):
+    """Verify 2FA during login."""
+    if request.user.is_authenticated:
+        return redirect('index')
+
+    user_id = request.session.get('2fa_user_id')
+    if not user_id:
+        messages.error(request, 'Invalid 2FA request.')
+        return redirect('signin')
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        messages.error(request, 'User not found.')
+        return redirect('signin')
+
+    if request.method == 'POST':
+        form = VerifyTwoFactorForm(request.POST)
+        otp_code = request.POST.get('otp')
+        backup_code = request.POST.get('backup_code')
+
+        if otp_code:
+            # Verify OTP
+            if utility.verify_otp(user, otp_code, 'two_factor_auth'):
+                # Clear session and login
+                if '2fa_user_id' in request.session:
+                    del request.session['2fa_user_id']
+                if '2fa_temp_user' in request.session:
+                    del request.session['2fa_temp_user']
+
+                login(request, user)
+                if request.user.is_superuser:
+                    return redirect('admin:index')
+                role = get_role(request)
+                request.session['user_role'] = role
+                messages.success(request, 'Logged in successfully.')
+                return redirect(role)
+            else:
+                messages.error(request, 'Invalid or expired OTP.')
+                return redirect('verify_2fa_login')
+
+        elif backup_code:
+            # Verify backup code
+            try:
+                two_factor_auth = user.two_factor_auth
+                if two_factor_auth.use_backup_code(backup_code):
+                    # Clear session and login
+                    if '2fa_user_id' in request.session:
+                        del request.session['2fa_user_id']
+                    if '2fa_temp_user' in request.session:
+                        del request.session['2fa_temp_user']
+
+                    login(request, user)
+                    if request.user.is_superuser:
+                        return redirect('admin:index')
+                    role = get_role(request)
+                    request.session['user_role'] = role
+                    messages.warning(request, 'Logged in with backup code. You have one less backup code.')
+                    return redirect(role)
+                else:
+                    messages.error(request, 'Invalid backup code.')
+                    return redirect('verify_2fa_login')
+            except:
+                messages.error(request, 'Invalid backup code.')
+                return redirect('verify_2fa_login')
+        else:
+            messages.error(request, 'Please enter OTP or backup code.')
+            return redirect('verify_2fa_login')
+    else:
+        form = VerifyTwoFactorForm()
+
+    return render(request, 'verify_2fa_login.html', {'form': form, 'temp_user': request.session.get('2fa_temp_user')})
+
+def forgot_password(request):
+    """Send OTP to user's email for password reset."""
+    if request.user.is_authenticated:
+        return redirect('index')
+
+    if request.method == 'POST':
+        form = ForgotPasswordForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('email')
+            user = User.objects.get(email=email)
+
+            # Create and send OTP
+            otp = utility.create_otp_for_user(user, 'password_reset')
+
+            # Send email with OTP
+            mailserver = MailServer()
+            context = {
+                'subject': 'Password Reset OTP',
+                'message': f'''<html><body>
+                <h2>Password Reset Request</h2>
+                <p>Your OTP for password reset is: <strong>{otp.otp_code}</strong></p>
+                <p>This OTP is valid for 10 minutes.</p>
+                <p>If you didn't request this, please ignore this email.</p>
+                </body></html>'''
+            }
+            result = mailserver.send_mail(to_mail=user.email, subject=context['subject'], message=context['message'])
+
+            if result['status']:
+                messages.success(request, 'OTP sent to your email. Please check your inbox.')
+                return redirect('verify_otp')
+            else:
+                messages.error(request, 'Failed to send OTP. Please try again.')
+                return redirect('forgot_password')
+    else:
+        form = ForgotPasswordForm()
+
+    return render(request, 'forgot_password.html', {'form': form})
+
+def verify_otp(request):
+    """Verify OTP sent to user's email."""
+    if request.user.is_authenticated:
+        return redirect('index')
+
+    if request.method == 'POST':
+        form = VerifyOTPForm(request.POST)
+        email = request.POST.get('email')
+
+        if not email:
+            messages.error(request, 'Email is required.')
+            return redirect('forgot_password')
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            messages.error(request, 'User not found.')
+            return redirect('forgot_password')
+
+        if form.is_valid():
+            otp_code = form.cleaned_data.get('otp')
+
+            if utility.verify_otp(user, otp_code, 'password_reset'):
+                request.session['password_reset_user_id'] = user.id
+                return redirect('reset_password')
+            else:
+                messages.error(request, 'Invalid or expired OTP.')
+                return redirect('verify_otp')
+    else:
+        form = VerifyOTPForm()
+
+    email = request.GET.get('email', '')
+    return render(request, 'verify_otp.html', {'form': form, 'email': email})
+
+def reset_password(request):
+    """Reset password after OTP verification."""
+    if request.user.is_authenticated:
+        return redirect('index')
+
+    user_id = request.session.get('password_reset_user_id')
+    if not user_id:
+        messages.error(request, 'Invalid reset request.')
+        return redirect('forgot_password')
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        messages.error(request, 'User not found.')
+        return redirect('forgot_password')
+
+    if request.method == 'POST':
+        form = ResetPasswordForm(request.POST)
+        if form.is_valid():
+            password = form.cleaned_data.get('password')
+            user.set_password(password)
+            user.save()
+
+            # Clear session
+            if 'password_reset_user_id' in request.session:
+                del request.session['password_reset_user_id']
+
+            messages.success(request, 'Password reset successfully. Please login with your new password.')
+            return redirect('signin')
+    else:
+        form = ResetPasswordForm()
+
+    return render(request, 'reset_password.html', {'form': form})
+
+@login_required(login_url='/signin')
+def enable_two_factor_auth(request):
+    """Enable 2FA for the user's account."""
+    user = request.user
+    try:
+        two_factor_auth = user.two_factor_auth
+    except:
+        from .models import TwoFactorAuth
+        two_factor_auth = TwoFactorAuth.objects.create(user=user)
+
+    if request.method == 'POST':
+        form = TwoFactorAuthForm(request.POST)
+        if form.is_valid():
+            method = form.cleaned_data.get('method')
+            two_factor_auth.method = method
+            two_factor_auth.is_enabled = True
+
+            # Generate backup codes
+            import secrets
+            backup_codes = [secrets.token_hex(4) for _ in range(10)]
+            two_factor_auth.backup_codes = ','.join(backup_codes)
+            two_factor_auth.save()
+
+            messages.success(request, '2FA enabled successfully.')
+            return redirect('profile_2fa_backup_codes', backup_codes=','.join(backup_codes))
+    else:
+        form = TwoFactorAuthForm()
+
+    return render(request, 'enable_2fa.html', {'form': form, '2fa': two_factor_auth})
+
+@login_required(login_url='/signin')
+def disable_two_factor_auth(request):
+    """Disable 2FA for the user's account."""
+    if request.method == 'POST':
+        user = request.user
+        try:
+            two_factor_auth = user.two_factor_auth
+            two_factor_auth.is_enabled = False
+            two_factor_auth.backup_codes = None
+            two_factor_auth.save()
+            messages.success(request, '2FA disabled successfully.')
+        except:
+            messages.error(request, 'Error disabling 2FA.')
+        return redirect('profile')
+    return render(request, 'disable_2fa_confirm.html')
+
+@login_required(login_url='/signin')
+def two_factor_backup_codes(request):
+    """Display backup codes after enabling 2FA."""
+    user = request.user
+    try:
+        two_factor_auth = user.two_factor_auth
+        backup_codes = two_factor_auth.get_backup_codes()
+    except:
+        messages.error(request, 'Error retrieving backup codes.')
+        return redirect('profile')
+
+    return render(request, 'two_factor_backup_codes.html', {'backup_codes': backup_codes})
 
 @login_required(login_url='/signin')
 def get_projects(request):
@@ -277,7 +543,14 @@ def update_task_status(request):
 
 @login_required(login_url='/signin')
 def profile(request):
-    return render(request, 'profile.html', {'user': request.user})
+    user = request.user
+    try:
+        two_factor_auth = user.two_factor_auth
+    except:
+        from .models import TwoFactorAuth
+        two_factor_auth = TwoFactorAuth.objects.create(user=user)
+
+    return render(request, 'profile.html', {'user': user, '2fa': two_factor_auth})
 
 @login_required(login_url='/signin')
 def edit_profile(request):

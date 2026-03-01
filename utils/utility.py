@@ -74,3 +74,42 @@ def generate_token():
         mixed_token += t_char + r_char
     mixed_token += timestamp[len(random_part):] + random_part[len(timestamp):]
     return mixed_token
+
+def generate_otp():
+    """Generate a random 6-digit OTP."""
+    import random
+    return str(random.randint(100000, 999999))
+
+def create_otp_for_user(user, purpose, expires_in_minutes=10):
+    """Create and save OTP for a user."""
+    from app.models import OTP
+    from django.utils import timezone
+    from datetime import timedelta
+
+    otp_code = generate_otp()
+    expires_at = timezone.now() + timedelta(minutes=expires_in_minutes)
+
+    # Delete previous unused OTPs for this purpose
+    OTP.objects.filter(user=user, purpose=purpose, is_used=False).delete()
+
+    otp = OTP.objects.create(
+        user=user,
+        otp_code=otp_code,
+        purpose=purpose,
+        expires_at=expires_at
+    )
+    return otp
+
+def verify_otp(user, otp_code, purpose):
+    """Verify OTP for a user."""
+    from app.models import OTP
+
+    try:
+        otp = OTP.objects.get(user=user, otp_code=otp_code, purpose=purpose)
+        if otp.is_valid():
+            otp.is_used = True
+            otp.save()
+            return True
+        return False
+    except OTP.DoesNotExist:
+        return False

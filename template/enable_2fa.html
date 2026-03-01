@@ -1,0 +1,73 @@
+{% extends 'index.html' %}
+{% block title %}Enable 2FA | BLISS-INFOTECH{% endblock title %}
+
+{% block sign %}
+<!-- Background with subtle neon gradient glow -->
+<div class="min-h-screen flex items-center justify-center relative overflow-hidden" style="margin-top: -50px;">
+  <!-- Abstract neon orbs in background -->
+  <div
+    class="absolute top-[20%] left-[20%] w-[30rem] h-[30rem] bg-[#00f3ff] rounded-full mix-blend-screen filter blur-[128px] opacity-10 animate-pulse">
+  </div>
+  <div
+    class="absolute bottom-[20%] right-[20%] w-[30rem] h-[30rem] bg-[#ff00ff] rounded-full mix-blend-screen filter blur-[128px] opacity-10 animate-pulse"
+    style="animation-delay: 2s;"></div>
+
+  <!-- Glassmorphism Card -->
+  <div
+    class="w-full max-w-md p-8 m-4 rounded-xl glass-panel relative z-10 neon-border transition-all duration-500 hover:shadow-[0_0_30px_rgba(0,243,255,0.2)]">
+
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold tracking-widest neon-text-cyan mb-2 uppercase">Enable 2FA</h1>
+      <p class="text-gray-400 text-xs tracking-[0.3em] uppercase opacity-70">Secure your account</p>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6">
+      {% for message in messages %}
+      <div class="p-3 rounded-lg mb-2 {% if message.tags %}{{ message.tags }}{% else %}bg-blue-900/30 border border-blue-500/50 text-blue-300{% endif %}">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form action="" method="post" class="space-y-6">
+      {% csrf_token %}
+
+      <div class="space-y-3">
+        <p class="text-gray-300 text-sm">Choose your 2FA method:</p>
+        {% for radio in form.method %}
+        <label class="flex items-center p-3 rounded-lg border border-gray-700/50 hover:border-[#00f3ff]/50 cursor-pointer transition-all">
+          {{ radio.tag }}
+          <span class="ml-3 text-gray-300">{{ radio.choice_label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+
+      <div class="bg-gray-900/30 border border-gray-700/50 rounded-lg p-4 text-sm text-gray-300">
+        <p class="flex items-start gap-2">
+          <i class="fas fa-info-circle text-[#00f3ff] mt-1 flex-shrink-0"></i>
+          <span>Backup codes will be generated to access your account if you lose access to your 2FA device.</span>
+        </p>
+      </div>
+
+      <div class="pt-4">
+        <button type="submit"
+          class="w-full py-3 px-4 rounded-lg font-bold tracking-widest uppercase text-sm neon-btn flex justify-center items-center gap-3 group">
+          <span>Enable 2FA</span>
+          <i class="fas fa-shield-alt text-xs group-hover:translate-x-1 transition-transform"></i>
+        </button>
+      </div>
+    </form>
+
+    <div class="mt-8 text-center text-xs tracking-wider">
+      <p class="text-gray-400">
+        <a href="/profile"
+          class="text-[#ff00ff] hover:text-white hover:shadow-[#ff00ff] transition-all font-bold flex items-center justify-center gap-1 inline-flex hover:underline decoration-[#ff00ff] underline-offset-4">
+          <i class="fas fa-arrow-left text-[10px]"></i> BACK TO PROFILE
+        </a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

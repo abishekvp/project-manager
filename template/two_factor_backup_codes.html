@@ -1,0 +1,96 @@
+{% extends 'index.html' %}
+{% block title %}Backup Codes | BLISS-INFOTECH{% endblock title %}
+
+{% block sign %}
+<!-- Background with subtle neon gradient glow -->
+<div class="min-h-screen flex items-center justify-center relative overflow-hidden" style="margin-top: -50px;">
+  <!-- Abstract neon orbs in background -->
+  <div
+    class="absolute top-[20%] left-[20%] w-[30rem] h-[30rem] bg-[#00f3ff] rounded-full mix-blend-screen filter blur-[128px] opacity-10 animate-pulse">
+  </div>
+  <div
+    class="absolute bottom-[20%] right-[20%] w-[30rem] h-[30rem] bg-[#ff00ff] rounded-full mix-blend-screen filter blur-[128px] opacity-10 animate-pulse"
+    style="animation-delay: 2s;"></div>
+
+  <!-- Glassmorphism Card -->
+  <div
+    class="w-full max-w-md p-8 m-4 rounded-xl glass-panel relative z-10 neon-border transition-all duration-500 hover:shadow-[0_0_30px_rgba(0,243,255,0.2)]">
+
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold tracking-widest neon-text-cyan mb-2 uppercase">Backup Codes</h1>
+      <p class="text-gray-400 text-xs tracking-[0.3em] uppercase opacity-70">Save these codes in a safe place</p>
+    </div>
+
+    <div class="bg-red-900/30 border border-red-500/50 rounded-lg p-4 mb-6">
+      <p class="text-red-300 text-sm flex items-start gap-2">
+        <i class="fas fa-exclamation-triangle mt-1 flex-shrink-0"></i>
+        <span>Each code can only be used once. Store them securely.</span>
+      </p>
+    </div>
+
+    <!-- Backup Codes List -->
+    <div class="bg-gray-900/50 border border-gray-700/50 rounded-lg p-4 mb-6 max-h-64 overflow-y-auto font-mono text-sm">
+      {% for code in backup_codes %}
+      <div class="flex justify-between items-center py-2 border-b border-gray-700/30 last:border-b-0 hover:bg-gray-800/30 px-2 rounded transition-colors">
+        <span class="text-[#00f3ff]">{{ code }}</span>
+        <button type="button" class="text-gray-500 hover:text-[#ff00ff] transition-colors copy-btn" data-code="{{ code }}">
+          <i class="fas fa-copy"></i>
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Download Button -->
+    <div class="flex gap-3 mb-6">
+      <button type="button" onclick="downloadCodes()" class="flex-1 py-2 px-3 rounded-lg bg-gray-900/30 border border-gray-700/50 hover:border-[#00f3ff]/50 text-gray-300 hover:text-[#00f3ff] transition-all text-sm font-bold">
+        <i class="fas fa-download"></i> Download
+      </button>
+      <button type="button" onclick="printCodes()" class="flex-1 py-2 px-3 rounded-lg bg-gray-900/30 border border-gray-700/50 hover:border-[#ff00ff]/50 text-gray-300 hover:text-[#ff00ff] transition-all text-sm font-bold">
+        <i class="fas fa-print"></i> Print
+      </button>
+    </div>
+
+    <a href="/profile" class="w-full py-3 px-4 rounded-lg font-bold tracking-widest uppercase text-sm neon-btn flex justify-center items-center gap-3 group inline-block text-center">
+      <span>Continue to Profile</span>
+      <i class="fas fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+    </a>
+  </div>
+</div>
+
+<script>
+function downloadCodes() {
+  const codes = document.querySelectorAll('.copy-btn');
+  let text = '2FA Backup Codes\n';
+  text += 'Generated: ' + new Date().toLocaleString() + '\n';
+  text += '================================\n\n';
+  codes.forEach((btn, index) => {
+    text += (index + 1) + '. ' + btn.getAttribute('data-code') + '\n';
+  });
+
+  const element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute('download', '2fa_backup_codes.txt');
+  element.style.display = 'none';
+  document.body.appendChild(element);
+  element.click();
+  document.body.removeChild(element);
+}
+
+function printCodes() {
+  window.print();
+}
+
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const code = this.getAttribute('data-code');
+    navigator.clipboard.writeText(code).then(() => {
+      const originalText = this.innerHTML;
+      this.innerHTML = '<i class="fas fa-check"></i>';
+      setTimeout(() => {
+        this.innerHTML = originalText;
+      }, 2000);
+    });
+  });
+});
+</script>
+{% endblock %}

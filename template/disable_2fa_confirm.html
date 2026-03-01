@@ -1,0 +1,47 @@
+{% extends 'index.html' %}
+{% block title %}Disable 2FA | BLISS-INFOTECH{% endblock title %}
+
+{% block sign %}
+<!-- Background with subtle neon gradient glow -->
+<div class="min-h-screen flex items-center justify-center relative overflow-hidden" style="margin-top: -50px;">
+  <!-- Abstract neon orbs in background -->
+  <div
+    class="absolute top-[20%] left-[20%] w-[30rem] h-[30rem] bg-[#00f3ff] rounded-full mix-blend-screen filter blur-[128px] opacity-10 animate-pulse">
+  </div>
+  <div
+    class="absolute bottom-[20%] right-[20%] w-[30rem] h-[30rem] bg-[#ff00ff] rounded-full mix-blend-screen filter blur-[128px] opacity-10 animate-pulse"
+    style="animation-delay: 2s;"></div>
+
+  <!-- Glassmorphism Card -->
+  <div
+    class="w-full max-w-md p-8 m-4 rounded-xl glass-panel relative z-10 neon-border transition-all duration-500 hover:shadow-[0_0_30px_rgba(0,243,255,0.2)]">
+
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold tracking-widest neon-text-cyan mb-2 uppercase">Disable 2FA</h1>
+      <p class="text-gray-400 text-xs tracking-[0.3em] uppercase opacity-70">Are you sure?</p>
+    </div>
+
+    <div class="bg-yellow-900/30 border border-yellow-500/50 rounded-lg p-4 mb-6">
+      <p class="text-yellow-300 text-sm flex items-start gap-2">
+        <i class="fas fa-exclamation-triangle mt-1 flex-shrink-0"></i>
+        <span>Disabling 2FA will reduce your account security. You will no longer need 2FA codes to login.</span>
+      </p>
+    </div>
+
+    <form action="" method="post" class="space-y-4">
+      {% csrf_token %}
+
+      <button type="submit"
+        class="w-full py-3 px-4 rounded-lg font-bold tracking-widest uppercase text-sm bg-red-900/30 hover:bg-red-900/50 border border-red-500/50 hover:border-red-500 text-red-300 flex justify-center items-center gap-3 group transition-all">
+        <span>Disable 2FA</span>
+        <i class="fas fa-times text-xs group-hover:translate-x-1 transition-transform"></i>
+      </button>
+
+      <a href="/profile" class="w-full py-3 px-4 rounded-lg font-bold tracking-widest uppercase text-sm neon-btn flex justify-center items-center gap-3 group inline-block text-center">
+        <span>Cancel</span>
+        <i class="fas fa-arrow-left text-xs"></i>
+      </a>
+    </form>
+  </div>
+</div>
+{% endblock %}
