@@ -147,7 +147,7 @@ print(f"Database: {settings.DATABASES['default']}")
 **Solution**: Add the variable to Render environment variables
 
 ### Database Connection Failed
-**Error**: `psycopg2.OperationalError: could not translate host name`
+**Error**: `psycopg.OperationalError: could not translate host name`
 **Solution**: Verify DB_HOST is correct from Render PostgreSQL connection string
 
 ### DEBUG=False Issues

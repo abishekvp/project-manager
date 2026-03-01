@@ -83,7 +83,7 @@ def check_requirements():
     
     required_packages = {
         'Django': 'Django' in content,
-        'psycopg2-binary': 'psycopg2' in content,
+        'psycopg': 'psycopg' in content,
         'python-decouple': 'decouple' in content,
         'gunicorn': 'gunicorn' in content,
         'whitenoise': 'whitenoise' in content,
