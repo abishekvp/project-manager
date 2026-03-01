@@ -1,109 +1,231 @@
 {% extends 'index.html' %}
-{% block title %}Dashboard{% endblock title %}
+{% block title %}Dashboard | BLISS-INFOTECH{% endblock title %}
+
 {% block body %}
-<section class="container-fluid">
-    <!-- Fixed Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">BLISS-INFOTECH</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTop" aria-controls="navbarTop" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
+<!-- App Wrapper -->
+<div class="min-h-screen bg-[#0a0a10] text-gray-200 flex flex-col font-sans" x-data="{ sidebarOpen: false }">
+
+    <!-- Top Navbar (Neon Glassmorphism) -->
+    <header
+        class="fixed top-0 left-0 right-0 h-16 z-50 glass-panel border-b border-[#00f3ff]/20 flex items-center justify-between px-4 lg:px-6 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+        <div class="flex items-center gap-4">
+            <!-- Mobile Menu Toggle -->
+            <button @click="sidebarOpen = !sidebarOpen"
+                class="lg:hidden text-[#00f3ff] hover:text-[#ff00ff] transition-colors">
+                <i class="fas fa-bars text-xl"></i>
             </button>
-        
-            <div class="collapse navbar-collapse justify-content-end" id="navbarTop">
-                <ul class="navbar-nav mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <span class="navbar-text me-3 px-3 text-uppercase">{{ request.user.username }}</span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-outline-danger" href="{% url 'signout' %}">Sign Out</a>
-                    </li>
-                </ul>
-            </div>
+            <a href="#" class="text-xl font-bold tracking-widest neon-text-cyan flex items-center gap-2 uppercase">
+                <i class="fas fa-cube text-[#00f3ff]"></i> BLISS-INFOTECH
+            </a>
         </div>
-    </nav>
-    
+
+        <div class="flex items-center gap-6">
+            <div
+                class="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 border border-[#b026ff]/30">
+                <div class="w-2 h-2 rounded-full bg-[#39ff14] animate-pulse"></div>
+                <span class="text-xs uppercase tracking-widest text-gray-300 font-medium">{{ request.user.username
+                    }}</span>
+                <span class="text-[10px] text-[#b026ff] ml-1">[{{ request.session.user_role }}]</span>
+            </div>
+            <a href="{% url 'signout' %}"
+                class="px-4 py-1.5 text-xs font-bold tracking-wider uppercase rounded-md text-[#ff00ff] border border-[#ff00ff] hover:bg-[#ff00ff] hover:text-black hover:shadow-[0_0_15px_#ff00ff] transition-all duration-300 flex items-center gap-2">
+                <i class="fas fa-power-off"></i> <span class="hidden sm:inline">Terminate</span>
+            </a>
+        </div>
+    </header>
+
     {% if request.session.user_role == 'vendor' %}
-    {% block vendor %}{% endblock %}
+    <!-- Vendor Specific Area -->
+    <main class="pt-20 px-4 md:px-8 max-w-7xl mx-auto w-full">
+        {% block vendor %}{% endblock %}
+    </main>
     {% else %}
-    <div class="row flex-nowrap">
-        <nav class="col-md-3 col-lg-2 d-md-block sidebar bg-dark" style="position: fixed; top: 75px; left: 0; height: calc(100vh - 75px); overflow-y: auto;">
-            <div class="position-sticky" id="navbarNav">
-                <ul class="nav flex-column">
+
+    <!-- Layout container: Sidebar + Main Content -->
+    <div class="flex flex-1 pt-16 h-screen overflow-hidden">
+
+        <!-- Backdrop for mobile sidebar -->
+        <div x-show="sidebarOpen" @click="sidebarOpen = false"
+            class="fixed inset-0 bg-black/80 z-40 lg:hidden backdrop-blur-sm transition-opacity"
+            x-transition.opacity.duration.300ms></div>
+
+        <!-- Sidebar Navigation -->
+        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+            class="fixed lg:static inset-y-0 left-0 mt-16 lg:mt-0 w-64 glass-panel border-r border-[#00f3ff]/10 lg:translate-x-0 transition-transform duration-300 ease-in-out z-40 flex flex-col h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar">
+
+            <div class="p-4 py-6 flex flex-col gap-2 relative">
+                <!-- Abstract Side Glow -->
+                <div
+                    class="absolute -left-10 top-20 w-32 h-32 bg-[#b026ff] rounded-full mix-blend-screen filter blur-[80px] opacity-20 pointer-events-none">
+                </div>
+
+                <div class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2 pl-2">System Modules
+                </div>
+
+                <nav class="space-y-1.5 flex-1 w-full pl-0">
+
                     {% if request.session.user_role == 'lead' or request.user.is_superuser %}
                     {% if request.user.is_superuser or request.user.username == 'abi' %}
-                    <a class="nav-link {% if request.path == '/lead/admin-dashboard' %}active{% endif %}" href="{% url 'admin-dashboard' %}">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Admin Dashboard</button></li>
+                    <a href="{% url 'admin-dashboard' %}"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if request.path == '/lead/admin-dashboard' %}bg-[#00f3ff]/10 text-[#00f3ff] border-l-2 border-[#00f3ff]{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-shield-alt w-5 text-center {% if request.path == '/lead/admin-dashboard' %}text-[#00f3ff] glow-icon{% else %}group-hover:text-[#00f3ff]{% endif %}"></i>
+                        Admin Core
                     </a>
-                    <a class="nav-link {% if request.path == 'test' %}active{% endif %}" href="{% url 'test' %}">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Test</button></li>
+                    <a href="{% url 'test' %}"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if request.path == 'test' %}bg-[#b026ff]/10 text-[#b026ff] border-l-2 border-[#b026ff]{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-flask w-5 text-center {% if request.path == 'test' %}text-[#b026ff] glow-icon{% else %}group-hover:text-[#b026ff]{% endif %}"></i>
+                        Diagnostic Lab
                     </a>
+                    <div class="my-3 border-b border-gray-800/50 w-full"></div>
                     {% endif %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.path == '/lead/' %}active{% endif %}" href="/lead/">
-                            <button class="create-btn w-100 btn btn-outline-light">Dashboard</button>
-                        </a>
-                    </li>
-                    <a class="nav-link {% if 'view-project' in request.path %}active{% endif %}" href="{% url 'view-projects' %}">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Projects</button></li>
-                    </a>
-                    <a class="nav-link {% if 'view-task' in request.path %}active{% endif %}" href="{% url 'lead-tasks' %}">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Tasks</button></li>
-                    </a>
-                    <a class="nav-link {% if 'mail-server' in request.path %}active{% endif %}" href="{% url 'mail-server' %}">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Mail Server</button></li>
-                    </a>
-                    <a class="nav-link {% if 'view-members' in request.path %}active{% endif %}" href="{% url 'view-members' %}">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Members</button></li>
-                    </a>
-                    <a class="nav-link {% if 'profile' in request.path %}active{% endif %}" href="{% url 'profile' %}">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Profile</button></li>
-                    </a>
-                    <a class="nav-link {% if 'view-market-leads' in request.path %}active{% endif %}" href="{% url 'view-market-leads' %}">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Leads</button></li>
-                    </a>
-                    {% elif request.session.user_role == 'manager' %}
-                    <a class="nav-link {% if request.path == '/manager/' %}active{% endif %}" href="/manager/">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Dashboard</button></li>
-                    </a>
-                    <a class="nav-link {% if 'view-project' in request.path %}active{% endif %}" href="{% url 'manager-list-projects' %}">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Projects</button></li>
-                    </a>
-                    <a class="nav-link {% if 'view-tasks' in request.path %}active{% endif %}" href="{% url 'manager-view-tasks' %}">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Tasks</button></li>
-                    </a>
-                    <a class="nav-link {% if 'profile' in request.path %}active{% endif %}" href="{% url 'profile' %}">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Profile</button></li>
-                    </a>
-                    {% elif request.session.user_role == 'peer' %}
-                    <a class="nav-link {% if request.path == '/peer/' %}active{% endif %}" href="/peer/">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Dashboard</button></li>
-                    </a>
-                    <a class="nav-link {% if 'view-project' in request.path %}active{% endif %}" href="{% url 'view-peer-projects' %}">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Projects</button></li>
-                    </a>
-                    <a class="nav-link {% if 'peer-tasks' in request.path %}active{% endif %}" href="{% url 'peer-tasks' %}">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Tasks</button></li>
-                    </a>
-                    <a class="nav-link {% if 'profile' in request.path %}active{% endif %}" href="{% url 'profile' %}">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Profile</button></li>
-                    </a>
-                    {% elif request.session.user_role == 'administer' %}
-                    <a class="nav-link {% if request.path == '/administer/' %}active{% endif %}" href="/administer/">
-                        <li class="nav-item"><button class="create-btn w-100 btn btn-outline-light">Vendors</button></li>
-                    </a>
-                    {% endif %}
-                </ul>                
-            </div>
-        </nav>
 
-        <!-- Main content area (Scrollable) -->
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4" style="overflow-x: hidden; margin-left: 17%; padding-top: 75px; height: calc(100vh - 20px);">
-            {% block dashboard %}
-            <!-- Default content can go here -->
-            {% endblock %}
+                    <a href="/lead/"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if request.path == '/lead/' %}bg-[#39ff14]/10 text-[#39ff14] border-l-2 border-[#39ff14]{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-network-wired w-5 text-center {% if request.path == '/lead/' %}text-[#39ff14] glow-icon{% else %}group-hover:text-[#39ff14]{% endif %}"></i>
+                        Command Center
+                    </a>
+                    <a href="{% url 'view-projects' %}"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if 'view-project' in request.path %}bg-[#00f3ff]/10 text-[#00f3ff] border-l-2 border-[#00f3ff]{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-layer-group w-5 text-center {% if 'view-project' in request.path %}text-[#00f3ff] glow-icon{% else %}group-hover:text-[#00f3ff]{% endif %}"></i>
+                        Projects Matrix
+                    </a>
+                    <a href="{% url 'lead-tasks' %}"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if 'view-task' in request.path %}bg-[#ff00ff]/10 text-[#ff00ff] border-l-2 border-[#ff00ff]{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-tasks w-5 text-center {% if 'view-task' in request.path %}text-[#ff00ff] glow-icon{% else %}group-hover:text-[#ff00ff]{% endif %}"></i>
+                        Task Queue
+                    </a>
+                    <a href="{% url 'mail-server' %}"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if 'mail-server' in request.path %}bg-yellow-400/10 text-yellow-400 border-l-2 border-yellow-400{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-envelope-open-text w-5 text-center {% if 'mail-server' in request.path %}text-yellow-400 glow-icon{% else %}group-hover:text-yellow-400{% endif %}"></i>
+                        Mail Relay
+                    </a>
+                    <a href="{% url 'view-members' %}"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if 'view-members' in request.path %}bg-[#b026ff]/10 text-[#b026ff] border-l-2 border-[#b026ff]{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-users w-5 text-center {% if 'view-members' in request.path %}text-[#b026ff] glow-icon{% else %}group-hover:text-[#b026ff]{% endif %}"></i>
+                        Entity Register
+                    </a>
+                    <a href="{% url 'view-market-leads' %}"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if 'view-market-leads' in request.path %}bg-[#39ff14]/10 text-[#39ff14] border-l-2 border-[#39ff14]{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-chart-line w-5 text-center {% if 'view-market-leads' in request.path %}text-[#39ff14] glow-icon{% else %}group-hover:text-[#39ff14]{% endif %}"></i>
+                        Market Signals
+                    </a>
+
+                    {% elif request.session.user_role == 'manager' %}
+                    <a href="/manager/"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if request.path == '/manager/' %}bg-[#00f3ff]/10 text-[#00f3ff] border-l-2 border-[#00f3ff]{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-satellite-dish w-5 text-center {% if request.path == '/manager/' %}text-[#00f3ff] glow-icon{% else %}group-hover:text-[#00f3ff]{% endif %}"></i>
+                        Command Center
+                    </a>
+                    <a href="{% url 'manager-list-projects' %}"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if 'view-project' in request.path %}bg-[#b026ff]/10 text-[#b026ff] border-l-2 border-[#b026ff]{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-layer-group w-5 text-center {% if 'view-project' in request.path %}text-[#b026ff] glow-icon{% else %}group-hover:text-[#b026ff]{% endif %}"></i>
+                        Projects Matrix
+                    </a>
+                    <a href="{% url 'manager-view-tasks' %}"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if 'view-tasks' in request.path %}bg-[#ff00ff]/10 text-[#ff00ff] border-l-2 border-[#ff00ff]{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-tasks w-5 text-center {% if 'view-tasks' in request.path %}text-[#ff00ff] glow-icon{% else %}group-hover:text-[#ff00ff]{% endif %}"></i>
+                        Task Queue
+                    </a>
+
+                    {% elif request.session.user_role == 'peer' %}
+                    <a href="/peer/"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if request.path == '/peer/' %}bg-[#39ff14]/10 text-[#39ff14] border-l-2 border-[#39ff14]{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-terminal w-5 text-center {% if request.path == '/peer/' %}text-[#39ff14] glow-icon{% else %}group-hover:text-[#39ff14]{% endif %}"></i>
+                        Terminal
+                    </a>
+                    <a href="{% url 'view-peer-projects' %}"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if 'view-project' in request.path %}bg-[#00f3ff]/10 text-[#00f3ff] border-l-2 border-[#00f3ff]{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-layer-group w-5 text-center {% if 'view-project' in request.path %}text-[#00f3ff] glow-icon{% else %}group-hover:text-[#00f3ff]{% endif %}"></i>
+                        Assigned Nodes
+                    </a>
+                    <a href="{% url 'peer-tasks' %}"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if 'peer-tasks' in request.path %}bg-[#ff00ff]/10 text-[#ff00ff] border-l-2 border-[#ff00ff]{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-tasks w-5 text-center {% if 'peer-tasks' in request.path %}text-[#ff00ff] glow-icon{% else %}group-hover:text-[#ff00ff]{% endif %}"></i>
+                        Active Threads
+                    </a>
+
+                    {% elif request.session.user_role == 'administer' %}
+                    <a href="/administer/"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if request.path == '/administer/' %}bg-[#00f3ff]/10 text-[#00f3ff] border-l-2 border-[#00f3ff]{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-truck-loading w-5 text-center {% if request.path == '/administer/' %}text-[#00f3ff] glow-icon{% else %}group-hover:text-[#00f3ff]{% endif %}"></i>
+                        Vendor Sync
+                    </a>
+                    {% endif %}
+
+                    <!-- Common to all logged in users (except vendor) -->
+                    <div class="my-3 border-b border-gray-800/50 w-full"></div>
+                    <a href="{% url 'profile' %}"
+                        class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all group {% if 'profile' in request.path %}bg-white/10 text-white border-l-2 border-white{% else %}text-gray-400 hover:text-white hover:bg-white/5{% endif %}">
+                        <i
+                            class="fas fa-user-astronaut w-5 text-center {% if 'profile' in request.path %}text-white glow-icon{% else %}group-hover:text-white{% endif %}"></i>
+                        Identity File
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Sidebar Footer Graphic -->
+            <div class="mt-auto p-4 flex justify-center opacity-30 pointer-events-none">
+                <i class="fas fa-fingerprint text-4xl text-[#00f3ff]"></i>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-4 lg:p-8 bg-[#0a0a10] relative custom-scrollbar z-0 w-full">
+            <div
+                class="absolute inset-0 bg-gradient-to-br from-[#00f3ff]/5 via-transparent to-[#ff00ff]/5 pointer-events-none z-0">
+            </div>
+
+            <!-- Dashboard Content Block Inner Wrap -->
+            <div class="relative z-10">
+                {% block dashboard %}
+                <!-- Default content can go here -->
+                {% endblock %}
+            </div>
         </main>
+
     </div>
     {% endif %}
-</section>
+
+</div>
+
+<style>
+    /* Dashboard Specific Neon Enhancements */
+    .glow-icon {
+        text-shadow: 0 0 10px currentColor;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(0, 243, 255, 0.3);
+        border-radius: 2px;
+    }
+
+    .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+        background: rgba(0, 243, 255, 0.8);
+        box-shadow: 0 0 5px #00f3ff;
+    }
+</style>
+
 {% endblock %}

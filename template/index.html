@@ -1,49 +1,160 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}BLISS-INFOTECH{% endblock title %}</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Add these to your HTML head -->
+
+    <!-- Bootstrap (kept for backward compatibility with older templates) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            corePlugins: {
+                preflight: false,
+            },
+            theme: {
+                extend: {
+                    colors: {
+                        neon: {
+                            cyan: '#00f3ff',
+                            pink: '#ff00ff',
+                            purple: '#b026ff',
+                            green: '#39ff14',
+                            bg: '#0a0a10',
+                            panel: '#12121c'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    
+
+    <style>
+        /* Neon Theme Base Styles */
+        body {
+            background-color: #0a0a10;
+            color: #d1d5db;
+        }
+
+        .glass-panel {
+            background: rgba(18, 18, 28, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 243, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        .neon-border {
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.5), inset 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+
+        .neon-text-cyan {
+            color: #00f3ff;
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.8);
+        }
+
+        .neon-text-pink {
+            color: #ff00ff;
+            text-shadow: 0 0 8px rgba(255, 0, 255, 0.8);
+        }
+
+        .neon-btn {
+            background: transparent;
+            color: #00f3ff;
+            border: 1px solid #00f3ff;
+            box-shadow: 0 0 5px rgba(0, 243, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .neon-btn:hover {
+            background: #00f3ff;
+            color: #000;
+            box-shadow: 0 0 15px #00f3ff, 0 0 30px #00f3ff;
+        }
+
+        .neon-input {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .neon-input:focus {
+            outline: none;
+            border-color: #00f3ff;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+            background: rgba(0, 243, 255, 0.05);
+        }
+
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a10;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00f3ff;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            box-shadow: 0 0 8px #00f3ff;
+        }
+    </style>
 </head>
-<body class="bg-dark">
+
+<body class="bg-[#0a0a10] text-gray-200 antialiased" hx-boost="true">
     {% csrf_token %}
+
+    <!-- Alpine.js Messages Notification -->
     {% if messages %}
-    <div class="messages" style="position: fixed; top: 0; left: 50%; transform: translateX(-50%); width: 100%; z-index: 1050;">
+    <div class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[9999] w-full max-w-lg space-y-3 pointer-events-none"
+        x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
         {% for message in messages %}
-        <div class="alert 
-            {% if message.tags == 'error' %}alert-danger
-            {% elif message.tags == 'warning' %}alert-warning
-            {% elif message.tags == 'success' %}alert-success
-            {% else %}alert-info
-            {% endif %}" 
-            role="alert" style="position: fixed; top: 10%; left: 50%; transform: translateX(-50%); max-width: 60%;">
-            {{ message }}
+        <div class="glass-panel p-4 rounded-lg flex items-center border-l-4 pointer-events-auto transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)]
+             {% if message.tags == 'error' %}border-red-500 text-red-400
+             {% elif message.tags == 'warning' %}border-yellow-500 text-yellow-400
+             {% elif message.tags == 'success' %}border-[#39ff14] text-[#39ff14]
+             {% else %}border-[#00f3ff] text-[#00f3ff]
+             {% endif %}" role="alert">
+            <div class="flex-1 text-sm font-medium tracking-wide">
+                {{ message }}
+            </div>
+            <button @click="show = false" class="ml-4 text-gray-400 hover:text-white transition-colors">&times;</button>
         </div>
         {% endfor %}
     </div>
-    <script>
-        setTimeout(function() {
-            document.querySelectorAll('.messages .alert').forEach(function(alert) {
-                alert.style.display = 'none';
-            });
-        }, 7000);
-    </script>
     {% endif %}
+
     {% if user.is_authenticated %}
-        {% block body %}{% endblock %}
+    {% block body %}{% endblock %}
     {% else %}
-        {% block sign %}{% endblock %}
+    {% block sign %}{% endblock %}
     {% endif %}
-    <div class="modal fade" id="assignTaskModal" tabindex="-1" aria-labelledby="assignTaskModalLabel" aria-hidden="true">
+    <div class="modal fade" id="assignTaskModal" tabindex="-1" aria-labelledby="assignTaskModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -55,9 +166,9 @@
                         <label for="user-search-input" class="form-label">Search Peer</label>
                         <input type="text" class="form-control" id="user-search-input" placeholder="Type to search...">
                     </div>
-                    
+
                     <ul id="user-search-results" class="list-group mb-3"></ul>
-    
+
                     <div id="assignTaskForm">
                         <input type="hidden" name="task_id">
                         <input type="hidden" name="user_id">
@@ -81,7 +192,8 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="confirmRemoveAssigned" tabindex="-1" aria-labelledby="confirmRemoveAssignedLabel" aria-hidden="true">
+    <div class="modal fade" id="confirmRemoveAssigned" tabindex="-1" aria-labelledby="confirmRemoveAssignedLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -98,7 +210,8 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="confirmDeleteProject" tabindex="-1" aria-labelledby="confirmDeleteProjectLabel" aria-hidden="true">
+    <div class="modal fade" id="confirmDeleteProject" tabindex="-1" aria-labelledby="confirmDeleteProjectLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -115,7 +228,8 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="confirmDeleteTask" tabindex="-1" aria-labelledby="confirmDeleteTaskLabel" aria-hidden="true">
+    <div class="modal fade" id="confirmDeleteTask" tabindex="-1" aria-labelledby="confirmDeleteTaskLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -132,7 +246,8 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="confirmRemoveProjectManager" tabindex="-1" aria-labelledby="confirmRemoveProjectManagerLabel" aria-hidden="true">
+    <div class="modal fade" id="confirmRemoveProjectManager" tabindex="-1"
+        aria-labelledby="confirmRemoveProjectManagerLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -159,15 +274,18 @@
                 <div class="modal-body">
                     <div id="taskCorrectionForm">
                         <input type="hidden" name="task_id">
-                        <textarea name="taskCorrectionContext" id="taskCorrectionContext" class="form-control" rows="5" placeholder="Enter correction details here..."></textarea>
+                        <textarea name="taskCorrectionContext" id="taskCorrectionContext" class="form-control" rows="5"
+                            placeholder="Enter correction details here..."></textarea>
                         <button class="btn btn-primary" onclick="add_task_correction()">Update</button>
-                        <button type="button" class="btn btn-secondary" onclick="reload_project_task_with_localstorage()" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-secondary"
+                            onclick="reload_project_task_with_localstorage()" data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="modal fade" id="taskPullRequest" tabindex="-1" aria-labelledby="taskPullRequestLabel" aria-hidden="true">
+    <div class="modal fade" id="taskPullRequest" tabindex="-1" aria-labelledby="taskPullRequestLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -177,9 +295,11 @@
                 <div class="modal-body">
                     <div id="taskPullRequestForm">
                         <input type="hidden" name="task_id">
-                        <textarea name="taskPullRequestContext" id="taskPullRequestContext" class="form-control" rows="5" placeholder="Enter pull request details here..."></textarea>
+                        <textarea name="taskPullRequestContext" id="taskPullRequestContext" class="form-control"
+                            rows="5" placeholder="Enter pull request details here..."></textarea>
                         <button class="btn btn-primary" onclick="add_task_pull_request()">Update</button>
-                        <button type="button" class="btn btn-secondary" onclick="reload_project_task_with_localstorage()" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-secondary"
+                            onclick="reload_project_task_with_localstorage()" data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </div>
             </div>
@@ -195,15 +315,18 @@
                 <div class="modal-body">
                     <div id="taskHoldForm">
                         <input type="hidden" name="task_id">
-                        <textarea name="taskHoldReason" id="taskHoldReason" class="form-control" rows="5" placeholder="Enter hold reason here..."></textarea>
+                        <textarea name="taskHoldReason" id="taskHoldReason" class="form-control" rows="5"
+                            placeholder="Enter hold reason here..."></textarea>
                         <button class="btn btn-primary" onclick="hold_task()">Update</button>
-                        <button type="button" class="btn btn-secondary" onclick="reload_project_task_with_localstorage()" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-secondary"
+                            onclick="reload_project_task_with_localstorage()" data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="modal fade detailTaskModal" id="detailTaskModal" tabindex="-1" aria-labelledby="detailTaskModalLabel" aria-hidden="true">
+    <div class="modal fade detailTaskModal" id="detailTaskModal" tabindex="-1" aria-labelledby="detailTaskModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -270,7 +393,8 @@
         </div>
     </div>
     {% if request.session.user_role == 'lead' or request.session.user_role == 'manager' %}
-    <div class="modal fade detailTaskModal detailTaskModalEdit" id="detailTaskModalEdit" tabindex="-1" aria-labelledby="detailTaskModalEditLabel" aria-hidden="true">
+    <div class="modal fade detailTaskModal detailTaskModalEdit" id="detailTaskModalEdit" tabindex="-1"
+        aria-labelledby="detailTaskModalEditLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -280,19 +404,24 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="detailTaskModalEditName" class="form-label font-weight-bold">Name</label>
-                        <input type="text" name="detailTaskModalEditName" class="form-control" id="detailTaskModalEditName"></input>
+                        <input type="text" name="detailTaskModalEditName" class="form-control"
+                            id="detailTaskModalEditName"></input>
                     </div>
                     <div class="mb-3">
-                        <label for="detailTaskModalEditDescription" class="form-label font-weight-bold">Description</label>
-                        <textarea type="text" name="detailTaskModalEditDescription" class="form-control" id="detailTaskModalEditDescription"></textarea>
+                        <label for="detailTaskModalEditDescription"
+                            class="form-label font-weight-bold">Description</label>
+                        <textarea type="text" name="detailTaskModalEditDescription" class="form-control"
+                            id="detailTaskModalEditDescription"></textarea>
                     </div>
                     <div class="mb-3">
                         <label for="detailTaskModalEditProject" class="form-label font-weight-bold">Project</label>
-                        <div name="detailTaskModalEditProject" class="form-control" id="detailTaskModalEditProject"></div>
+                        <div name="detailTaskModalEditProject" class="form-control" id="detailTaskModalEditProject">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="detailTaskModalEditAssigned" class="form-label font-weight-bold">Assigned</label>
-                        <div name="detailTaskModalEditAssigned" class="form-control" id="detailTaskModalEditAssigned"></div>
+                        <div name="detailTaskModalEditAssigned" class="form-control" id="detailTaskModalEditAssigned">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="detailTaskModalEditStatus" class="form-label font-weight-bold">Status</label>
@@ -300,19 +429,25 @@
                     </div>
                     <div class="mb-3">
                         <label for="detailTaskModalEditDue" class="form-label font-weight-bold">Due Date</label>
-                        <input type="date" name="detailTaskModalEditDue" class="form-control" id="detailTaskModalEditDue"></input>
+                        <input type="date" name="detailTaskModalEditDue" class="form-control"
+                            id="detailTaskModalEditDue"></input>
                     </div>
                     <div class="mb-3">
-                        <label for="detailTaskModalEditPullRequest" class="form-label font-weight-bold">Pull Request</label>
-                        <textarea name="detailTaskModalEditPullRequest" class="form-control" id="detailTaskModalEditPullRequest"></textarea>
+                        <label for="detailTaskModalEditPullRequest" class="form-label font-weight-bold">Pull
+                            Request</label>
+                        <textarea name="detailTaskModalEditPullRequest" class="form-control"
+                            id="detailTaskModalEditPullRequest"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="detailTaskModalEditCorrection" class="form-label font-weight-bold">Corrections</label>
-                        <textarea name="detailTaskModalEditCorrection" class="form-control" id="detailTaskModalEditCorrection"></textarea>
+                        <label for="detailTaskModalEditCorrection"
+                            class="form-label font-weight-bold">Corrections</label>
+                        <textarea name="detailTaskModalEditCorrection" class="form-control"
+                            id="detailTaskModalEditCorrection"></textarea>
                     </div>
                     <div class="mb-3">
                         <label for="detailTaskModalEditHold" class="form-label font-weight-bold">Hold Reason</label>
-                        <textarea name="detailTaskModalEditHold" class="form-control" id="detailTaskModalEditHold"></textarea>
+                        <textarea name="detailTaskModalEditHold" class="form-control"
+                            id="detailTaskModalEditHold"></textarea>
                     </div>
                     <div class="mb-3">
                         <label for="detailTaskModalEditCreated" class="form-label font-weight-bold">Created</label>
@@ -332,7 +467,8 @@
         </div>
     </div>
     {% endif %}
-    <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel" aria-hidden="true">
+    <div class="modal fade" id="createTaskModal" tabindex="-1" aria-labelledby="createTaskModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -348,17 +484,20 @@
                         </div>
                         <div class="mb-3">
                             <label for="task-description" class="form-label">Task Description</label>
-                            <textarea class="form-control" id="task-description" name="task-description" required></textarea>
+                            <textarea class="form-control" id="task-description" name="task-description"
+                                required></textarea>
                         </div>
                         <div class="mb-3">
                             <label for="search-user-input" class="form-label">Search User</label>
-                            <input type="text" class="form-control" name="task-user" id="search-user-input" placeholder="Type to search...">
+                            <input type="text" class="form-control" name="task-user" id="search-user-input"
+                                placeholder="Type to search...">
                             <ul id="search-user-results" class="list-group mb-3"></ul>
                             <input type="hidden" id="userCreateTask">
                         </div>
                         <div class="mb-3" id="search-project">
                             <label for="search-project-input" class="form-label">Search Project</label>
-                            <input type="text" class="form-control" name="task-project" id="search-project-input" placeholder="Type to search...">
+                            <input type="text" class="form-control" name="task-project" id="search-project-input"
+                                placeholder="Type to search...">
                             <ul id="search-project-results" class="list-group mb-3"></ul>
                             <input type="hidden" id="projectCreateTask">
                         </div>
@@ -388,4 +527,5 @@
     <script src="{% static 'js/styling.js' %}"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </body>
+
 </html>

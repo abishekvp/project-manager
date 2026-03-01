@@ -9,7 +9,8 @@
                 </select>
             </a>
             <form class="form-inline my-2 my-lg-0">
-                <input class="form-control mr-sm-2" type="search" id="search-projects-list" placeholder="Search" aria-label="Search">
+                <input class="form-control mr-sm-2" type="search" id="search-projects-list" placeholder="Search"
+                    aria-label="Search">
             </form>
         </div>
     </nav>
@@ -32,8 +33,11 @@
     </table>
 </div>
 <script>
-    window.onload = function() {
+    document.addEventListener("htmx:load", function () {
         get_projects();
-    };
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+        get_projects();
+    });
 </script>
 {% endblock %}

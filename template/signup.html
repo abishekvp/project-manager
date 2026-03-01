@@ -1,34 +1,86 @@
 {% extends 'index.html' %}
-{% block title %}SignUp{% endblock title %}
+{% block title %}Sign Up | BLISS-INFOTECH{% endblock title %}
+
 {% block sign %}
-<div class="d-flex justify-content-center align-items-center" style="min-height: 100vh; margin-top: -50px;">
-    <div class="card shadow-lg p-5" style="width: 100%; max-width: 600px;">
-        <h1 class="text-center mb-5">Sign Up</h1>
-        <form action="" method="post">
+<!-- Background with subtle neon gradient glow -->
+<div class="min-h-screen flex items-center justify-center relative overflow-hidden"
+    style="margin-top: -50px; padding-top: 80px; padding-bottom: 50px;">
+    <!-- Abstract neon orbs in background -->
+    <div
+        class="absolute top-[10%] right-[10%] w-[35rem] h-[35rem] bg-[#b026ff] rounded-full mix-blend-screen filter blur-[150px] opacity-10 animate-pulse">
+    </div>
+    <div class="absolute bottom-[10%] left-[10%] w-[25rem] h-[25rem] bg-[#00f3ff] rounded-full mix-blend-screen filter blur-[128px] opacity-10 animate-pulse"
+        style="animation-delay: 3s;"></div>
+
+    <!-- Glassmorphism Card -->
+    <div
+        class="w-full max-w-lg p-8 m-4 rounded-xl glass-panel relative z-10 neon-border transition-all duration-500 hover:shadow-[0_0_30px_rgba(176,38,255,0.2)]">
+
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold tracking-widest neon-text-pink mb-2 uppercase">BLISS-INFOTECH</h1>
+            <p class="text-gray-400 text-xs tracking-[0.3em] uppercase opacity-70">Initialize New Entity</p>
+        </div>
+
+        <form action="" method="post" class="space-y-5" hx-boost="true">
             {% csrf_token %}
-            <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" name="username" id="username" class="form-control" placeholder="Username" required>
+
+            <div class="relative group">
+                <i
+                    class="fas fa-user absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 group-focus-within:text-[#ff00ff] transition-colors duration-300"></i>
+                <input type="text" name="username" id="username"
+                    class="w-full bg-black/40 border border-gray-700/50 rounded-lg py-3 px-11 text-gray-200 placeholder-gray-600 focus:outline-none focus:border-[#ff00ff] focus:ring-1 focus:ring-[#ff00ff] transition-all duration-300"
+                    placeholder="Username" required autocomplete="off">
             </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" name="email" id="email" class="form-control" placeholder="Email" required>
+
+            <div class="relative group">
+                <i
+                    class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 group-focus-within:text-[#ff00ff] transition-colors duration-300"></i>
+                <input type="email" name="email" id="email"
+                    class="w-full bg-black/40 border border-gray-700/50 rounded-lg py-3 px-11 text-gray-200 placeholder-gray-600 focus:outline-none focus:border-[#ff00ff] focus:ring-1 focus:ring-[#ff00ff] transition-all duration-300"
+                    placeholder="Email Address" required autocomplete="off">
             </div>
-            <div class="mb-3">
-                <label for="role" class="form-label">Role</label>
-                <select name="role" id="role" class="form-control" placeholder="Email" required>
-                    <option value="LEAD">Lead</option>
-                    <option value="MANAGER">Manager</option>
-                    <option value="PEER" selected>Peer</option>
+
+            <div class="relative group">
+                <i
+                    class="fas fa-id-badge absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 group-focus-within:text-[#ff00ff] transition-colors duration-300 z-10"></i>
+                <select name="role" id="role"
+                    class="w-full bg-[#0a0a10] border border-gray-700/50 rounded-lg py-3 px-11 text-gray-200 focus:outline-none focus:border-[#ff00ff] focus:ring-1 focus:ring-[#ff00ff] transition-all duration-300 appearance-none cursor-pointer"
+                    required>
+                    <option value="LEAD" class="bg-[#0a0a10] text-[#00f3ff]">Lead Protocol</option>
+                    <option value="MANAGER" class="bg-[#0a0a10] text-[#b026ff]">Manager Protocol</option>
+                    <option value="PEER" selected class="bg-[#0a0a10] text-[#39ff14]">Peer Protocol</option>
                 </select>
+                <i
+                    class="fas fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none"></i>
             </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" name="password" id="password" class="form-control" placeholder="Password" required>
+
+            <div class="relative group">
+                <i
+                    class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 group-focus-within:text-[#ff00ff] transition-colors duration-300"></i>
+                <input type="password" name="password" id="password"
+                    class="w-full bg-black/40 border border-gray-700/50 rounded-lg py-3 px-11 text-gray-200 placeholder-gray-600 focus:outline-none focus:border-[#ff00ff] focus:ring-1 focus:ring-[#ff00ff] transition-all duration-300"
+                    placeholder="Access Code (Password)" required>
             </div>
-            <button type="submit" class="btn btn-primary w-100">Sign Up</button>
-            <p class="mt-3 text-center">Already have an account? <a href="/signin">Sign In</a></p>
+
+            <div class="pt-4">
+                <button type="submit"
+                    class="w-full py-3 px-4 rounded-lg font-bold tracking-widest uppercase text-sm border border-[#ff00ff] text-[#ff00ff]
+                               hover:bg-[#ff00ff] hover:text-black hover:shadow-[0_0_15px_#ff00ff,0_0_30px_#ff00ff] transition-all duration-300 flex justify-center items-center gap-3 group">
+                    <span>Create Profile</span>
+                    <i class="fas fa-fingerprint text-sm group-hover:scale-110 transition-transform"></i>
+                </button>
+            </div>
         </form>
+
+        <div class="mt-8 text-center text-xs tracking-wider">
+            <p class="text-gray-400">
+                ACTIVE ENTITY?
+                <a href="/signin"
+                    class="text-[#00f3ff] hover:text-white hover:shadow-[#00f3ff] transition-all ml-2 font-bold flex items-center justify-center gap-1 inline-flex hover:underline decoration-[#00f3ff] underline-offset-4">
+                    AUTHENTICATE SESSION <i class="fas fa-arrow-right text-[10px]"></i>
+                </a>
+            </p>
+        </div>
     </div>
 </div>
 {% endblock %}

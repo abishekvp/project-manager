@@ -9,7 +9,11 @@ class AppConfig(AppConfig):
     name = 'app'
     def ready(self):
         post_migrate.connect(create_default_groups, sender=self)
-        config_mail_server()
+        try:
+            config_mail_server()
+        except Exception:
+            # Silently skip if mail server table doesn't exist yet (e.g., during migrations)
+            pass
         atexit.register(on_server_stop)
 
 def create_default_groups(sender, **kwargs):

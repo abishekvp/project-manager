@@ -5,7 +5,8 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <button class="nav-link btn btn-primary text-uppercase font-weight-bold py-2 px-md-4 active" onclick="create_project()">Create</button>
+                    <button class="nav-link btn btn-primary text-uppercase font-weight-bold py-2 px-md-4 active"
+                        onclick="create_project()">Create</button>
                 </li>
             </ul>
             <a class="nav-link p-3">
@@ -14,7 +15,8 @@
                 </select>
             </a>
             <form class="form-inline my-2 my-lg-0">
-                <input class="form-control mr-sm-2" type="search" id="search-projects-list" placeholder="Search" aria-label="Search">
+                <input class="form-control mr-sm-2" type="search" id="search-projects-list" placeholder="Search"
+                    aria-label="Search">
             </form>
         </div>
     </nav>
@@ -38,8 +40,11 @@
 </div>
 
 <script>
-    window.onload = function() {
+    document.addEventListener("htmx:load", function () {
         get_projects();
-    };
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+        get_projects();
+    });
 </script>
 {% endblock %}

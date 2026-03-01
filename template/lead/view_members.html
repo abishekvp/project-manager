@@ -18,7 +18,8 @@
                 </select>
             </a>
             <form id="members-table" class="form-inline my-2 my-lg-0">
-                <input class="form-control mr-sm-2" name="search" oninput="search_members(this.value)" type="search" placeholder="Search" aria-label="Search">
+                <input class="form-control mr-sm-2" name="search" oninput="search_members(this.value)" type="search"
+                    placeholder="Search" aria-label="Search">
             </form>
         </div>
     </nav>
@@ -37,8 +38,11 @@
     </table>
 </div>
 <script>
-    window.onload = function() {
+    document.addEventListener("htmx:load", function () {
         reload_members();
-    };
+    });
+    document.addEventListener("DOMContentLoaded", function () {
+        reload_members();
+    });
 </script>
 {% endblock %}
