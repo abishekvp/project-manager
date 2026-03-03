@@ -40,11 +40,8 @@
 </div>
 
 <script>
-    document.addEventListener("htmx:load", function () {
-        get_projects();
-    });
     document.addEventListener("DOMContentLoaded", function () {
         get_projects();
-    });
+    }, { once: true }); // Only run once to prevent duplicate calls
 </script>
 {% endblock %}

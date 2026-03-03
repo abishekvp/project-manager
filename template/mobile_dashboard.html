@@ -1,0 +1,173 @@
+{% extends "base_mobile.html" %}
+
+{% block title %}Dashboard - Project Manager{% endblock %}
+{% block header_title %}Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <!-- Welcome Section -->
+    <div class="card">
+        <div class="card-title">Welcome, {{ user.first_name }}</div>
+        <div class="card-subtitle">{{ today_date }}</div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value" id="total-tasks">0</div>
+            <div class="stat-label">Total Tasks</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-value" id="in-progress-tasks">0</div>
+            <div class="stat-label">In Progress</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" id="completed-tasks">0</div>
+            <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-value" id="overdue-tasks">0</div>
+            <div class="stat-label">Overdue</div>
+        </div>
+    </div>
+
+    <!-- Time Tracking Section -->
+    <div class="card">
+        <div class="card-title">Time Tracking</div>
+        <div style="margin-top: 12px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 12px; color: #999;">Estimated</span>
+                <span id="total-estimated" style="font-weight: 600;">0h</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 12px; color: #999;">Logged</span>
+                <span id="total-logged" style="font-weight: 600;">0h</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="font-size: 12px; color: #999;">Efficiency</span>
+                <span id="efficiency-percent" style="font-weight: 600; color: var(--primary);">0%</span>
+            </div>
+            <div class="progress-bar" style="margin-top: 8px;">
+                <div class="progress-fill" id="efficiency-bar" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects Section -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div class="card-title" style="margin: 0;">My Projects</div>
+            <a href="{% url 'get-projects' %}" style="color: var(--primary); font-size: 12px; text-decoration: none;">View All</a>
+        </div>
+        <div id="projects-list" class="list">
+            <!-- Projects loaded via JavaScript -->
+        </div>
+    </div>
+
+    <!-- Recent Activity Section -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div class="card-title" style="margin: 0;">Recent Activity</div>
+        </div>
+        <div id="activity-list" style="font-size: 13px;">
+            <!-- Activity loaded via JavaScript -->
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div style="display: flex; gap: 8px; padding: 0 16px;">
+        <button class="btn btn-primary btn-block" onclick="window.location.href='{% url 'create-task' %}'">
+            <i class="fas fa-plus"></i> New Task
+        </button>
+        <button class="btn btn-secondary btn-block" onclick="window.location.href='{% url 'get-projects' %}'">
+            <i class="fas fa-folder-plus"></i> New Project
+        </button>
+    </div>
+</div>
+
+<script>
+    // Load dashboard data
+    async function loadDashboard() {
+        try {
+            const data = await getDashboardAnalytics();
+            const analytics = data.analytics;
+
+            // Update stats
+            document.getElementById('total-tasks').textContent = analytics.tasks.total;
+            document.getElementById('in-progress-tasks').textContent = analytics.tasks.in_progress;
+            document.getElementById('completed-tasks').textContent = analytics.tasks.completed;
+            document.getElementById('overdue-tasks').textContent = analytics.tasks.overdue;
+
+            // Update time tracking
+            const totalEst = analytics.time_tracking.total_estimated;
+            const totalLogged = analytics.time_tracking.total_logged;
+            const efficiency = analytics.time_tracking.efficiency;
+
+            document.getElementById('total-estimated').textContent = Math.round(totalEst / 60) + 'h';
+            document.getElementById('total-logged').textContent = Math.round(totalLogged / 60) + 'h';
+            document.getElementById('efficiency-percent').textContent = efficiency.toFixed(1) + '%';
+            document.getElementById('efficiency-bar').style.width = Math.min(efficiency, 100) + '%';
+
+            // Display projects
+            displayProjects(analytics.projects.stats.slice(0, 3));
+
+            // Display recent activities
+            displayRecentActivities(analytics.recent_activities);
+
+        } catch (error) {
+            console.error('Error loading dashboard:', error);
+            showToast('Failed to load dashboard', 'error');
+        }
+    }
+
+    function displayProjects(projects) {
+        const list = document.getElementById('projects-list');
+        if (!projects || projects.length === 0) {
+            list.innerHTML = '<div class="empty-state"><div class="empty-state-text">No projects yet</div></div>';
+            return;
+        }
+
+        list.innerHTML = projects.map(project => `
+            <div class="list-item">
+                <div class="list-item-content">
+                    <div class="list-item-title">${project.name}</div>
+                    <div style="margin-top: 8px;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${project.progress}%"></div>
+                        </div>
+                        <div style="font-size: 11px; color: #999; margin-top: 4px;">
+                            ${project.completed_tasks}/${project.total_tasks} tasks
+                        </div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right" style="color: #999;"></i>
+            </div>
+        `).join('');
+    }
+
+    function displayRecentActivities(activities) {
+        const list = document.getElementById('activity-list');
+        if (!activities || activities.length === 0) {
+            list.innerHTML = '<div class="empty-state"><div class="empty-state-text">No recent activity</div></div>';
+            return;
+        }
+
+        list.innerHTML = activities.map(activity => `
+            <div style="padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px;">
+                <strong>${activity.user}</strong> ${activity.action}
+                <div style="color: #999; margin-top: 2px;">
+                    ${activity.description}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Load data on page load
+    loadDashboard();
+</script>
+{% endblock %}

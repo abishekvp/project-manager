@@ -288,11 +288,21 @@ function hold_task(){
 }
 
 function get_tasks(){
+    // Skip if request is already in progress
+    if (isPendingRequest('/get-task-list')) {
+        console.log('⏸️ Skipping duplicate /get-task-list request (already in progress)');
+        return;
+    }
+
+    markRequestPending('/get-task-list');
     $.ajax({
         url: '/get-task-list',
         type: 'GET',
         success: function(response){
             load_tasks_for_view(response.tasks);
+        },
+        complete: function () {
+            clearRequestPending('/get-task-list');
         }
     });
 }
@@ -430,6 +440,13 @@ function load_members(members) {
 }
 
 function reload_members(){
+    // Skip if request is already in progress
+    if (isPendingRequest('/lead/view-members')) {
+        console.log('⏸️ Skipping duplicate /lead/view-members request (already in progress)');
+        return;
+    }
+
+    markRequestPending('/lead/view-members');
     loading()
     $.ajax({
         type: "GET",
@@ -438,6 +455,9 @@ function reload_members(){
             loaded()
             load_members(response.members);
         },
+        complete: function () {
+            clearRequestPending('/lead/view-members');
+        }
     });
 }
 

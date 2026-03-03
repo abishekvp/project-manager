@@ -1,3 +1,20 @@
+// ============================================================================
+// REQUEST DEDUPLICATION - Prevent multiple simultaneous identical requests
+// ============================================================================
+const pendingMarketingRequests = new Map();
+
+function isMarketingRequestPending(url) {
+    return pendingMarketingRequests.has(url);
+}
+
+function markMarketingRequestPending(url) {
+    pendingMarketingRequests.set(url, true);
+}
+
+function clearMarketingRequestPending(url) {
+    pendingMarketingRequests.delete(url);
+}
+
 function loads_maketing_leads(leads){
     const leadsTableBody = $(".marketing_table_data");
     $(leadsTableBody).empty();
@@ -68,14 +85,23 @@ function create_market_lead(){
 }
 
 function get_marketing_leads(){
+    // Skip if request is already in progress
+    if (isMarketingRequestPending('/marketing/view-market-leads')) {
+        console.log('⏸️ Skipping duplicate /marketing/view-market-leads request (already in progress)');
+        return;
+    }
+
+    markMarketingRequestPending('/marketing/view-market-leads');
     $.ajax({
         type: "GET",
         url: "/marketing/view-market-leads",
         success: function(response) {
             loads_maketing_leads(response.leads)
+        },
+        complete: function () {
+            clearMarketingRequestPending('/marketing/view-market-leads');
         }
     });
-    
 }
 
 function sort_leads_by_status(status){

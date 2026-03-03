@@ -38,11 +38,8 @@
     </table>
 </div>
 <script>
-    document.addEventListener("htmx:load", function () {
-        reload_members();
-    });
     document.addEventListener("DOMContentLoaded", function () {
         reload_members();
-    });
+    }, { once: true }); // Only run once to prevent duplicate calls
 </script>
 {% endblock %}

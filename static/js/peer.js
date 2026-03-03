@@ -1,3 +1,20 @@
+// ============================================================================
+// REQUEST DEDUPLICATION - Prevent multiple simultaneous identical requests
+// ============================================================================
+const pendingPeerRequests = new Map();
+
+function isPeerRequestPending(url) {
+    return pendingPeerRequests.has(url);
+}
+
+function markPeerRequestPending(url) {
+    pendingPeerRequests.set(url, true);
+}
+
+function clearPeerRequestPending(url) {
+    pendingPeerRequests.delete(url);
+}
+
 function load_tasks(tasks){
     $(".tasks_table_data").empty();
     tasks.forEach((task, index) => {
@@ -47,6 +64,14 @@ function load_tasks_for_view(tasks){
     });}
 
 function get_peer_projects() {
+    // Skip if request is already in progress
+    if (isPeerRequestPending('/peer/view-projects')) {
+        console.log('⏸️ Skipping duplicate /peer/view-projects request (already in progress)');
+        return;
+    }
+
+    markPeerRequestPending('/peer/view-projects');
+
     $.ajax({
         type: "GET",
         url: "/peer/view-projects",
@@ -68,6 +93,9 @@ function get_peer_projects() {
                 }, 0);
             });
         },
+        complete: function () {
+            clearPeerRequestPending('/peer/view-projects');
+        }
     });
 }
 

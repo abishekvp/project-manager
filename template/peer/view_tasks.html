@@ -39,12 +39,8 @@
     </table>
 </div>
 <script>
-    document.addEventListener("htmx:load", function () {
-        get_peer_tasks();
-    });
-    // Fallback if not using HTMX navigation initially
     document.addEventListener("DOMContentLoaded", function () {
         get_peer_tasks();
-    });
+    }, { once: true }); // Only run once to prevent duplicate calls
 </script>
 {% endblock %}

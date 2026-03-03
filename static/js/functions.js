@@ -7,6 +7,23 @@ $.ajaxSetup({
     }
 });
 
+// ============================================================================
+// REQUEST DEDUPLICATION - Prevent multiple simultaneous identical requests
+// ============================================================================
+const pendingRequests = new Map();
+
+function isPendingRequest(url) {
+    return pendingRequests.has(url);
+}
+
+function markRequestPending(url) {
+    pendingRequests.set(url, true);
+}
+
+function clearRequestPending(url) {
+    pendingRequests.delete(url);
+}
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -257,6 +274,14 @@ function load_projects(projects){
 }
 
 function get_projects() {
+    // Skip if request is already in progress
+    if (isPendingRequest('/get-projects')) {
+        console.log('⏸️ Skipping duplicate /get-projects request (already in progress)');
+        return;
+    }
+
+    markRequestPending('/get-projects');
+
     $.ajax({
         type: "GET",
         url: "/get-projects",
@@ -265,6 +290,9 @@ function get_projects() {
         },
         error: function (xhr, status, error) {
             alert("Failed to retrieve projects. Please try again.");
+        },
+        complete: function () {
+            clearRequestPending('/get-projects');
         }
     });
 };

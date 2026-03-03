@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #39ff14 0%, #00f3ff 100%);
+            color: #000;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .task-card {
+            background-color: #f0fff4;
+            border-left: 4px solid #39ff14;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .task-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #555;
+            width: 120px;
+        }
+        .info-value {
+            color: #333;
+            flex: 1;
+        }
+        .completion-badge {
+            display: inline-block;
+            background-color: #39ff14;
+            color: #000;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #39ff14 0%, #00f3ff 100%);
+            color: #000;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            background-color: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ Task Completed!</h1>
+        </div>
+        <div class="content">
+            <p>Great news!</p>
+            <p>A task in the <strong>{{ project_name }}</strong> project has been completed.</p>
+
+            <div class="task-card">
+                <div class="completion-badge">✓ COMPLETED</div>
+                <div class="task-title">{{ task_name }}</div>
+                <div class="info-row">
+                    <span class="info-label">Project:</span>
+                    <span class="info-value">{{ project_name }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Completed By:</span>
+                    <span class="info-value">{{ completed_by }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Completion Date:</span>
+                    <span class="info-value">{{ completion_date|date:"M d, Y \a\t g:i A" }}</span>
+                </div>
+            </div>
+
+            <p style="text-align: center;">
+                <a href="{{ task_url }}" class="cta-button">Review Task Details</a>
+            </p>
+
+            <p style="margin-top: 30px;">The task has been successfully marked as completed. You can review the details and any associated work by clicking the link above.</p>
+
+            <p>Best regards,<br><strong>BLISS-INFOTECH Project Manager</strong></p>
+        </div>
+        <div class="footer">
+            <p>This is an automated email. Please do not reply to this message.</p>
+            <p>&copy; 2026 BLISS-INFOTECH. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

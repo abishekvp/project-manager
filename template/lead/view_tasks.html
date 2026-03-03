@@ -46,11 +46,8 @@
     </table>
 </div>
 <script>
-    document.addEventListener("htmx:load", function () {
-        get_tasks();
-    });
     document.addEventListener("DOMContentLoaded", function () {
         get_tasks();
-    });
+    }, { once: true }); // Only run once to prevent duplicate calls
 </script>
 {% endblock %}

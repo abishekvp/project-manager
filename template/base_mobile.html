@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Project Manager - Task Management Application">
+    <title>{% block title %}Project Manager{% endblock %}</title>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <h1>{% block header_title %}Project Manager{% endblock %}</h1>
+        <div class="icons">
+            <button id="notifications-btn" class="notification-btn" onclick="toggleNotifications()">
+                <i class="fas fa-bell"></i>
+                <span class="notification-badge" id="notif-count" style="display: none;">0</span>
+            </button>
+            <button onclick="toggleMenu()">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        {% block content %}
+        <!-- Page content goes here -->
+        {% endblock %}
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="{% url 'index' %}" class="{% block nav_dashboard %}{% endblock %}">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="{% url 'get-tasks-list' %}" class="{% block nav_tasks %}{% endblock %}">
+            <i class="fas fa-check-circle"></i>
+            <span>Tasks</span>
+        </a>
+        <a href="{% url 'get-projects' %}" class="{% block nav_projects %}{% endblock %}">
+            <i class="fas fa-folder"></i>
+            <span>Projects</span>
+        </a>
+        <a href="#" onclick="openNotificationsPanel()" class="{% block nav_notifications %}{% endblock %}">
+            <i class="fas fa-bell"></i>
+            <span>Alerts</span>
+        </a>
+        <a href="{% url 'profile' %}" class="{% block nav_profile %}{% endblock %}">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <!-- Notifications Panel Modal -->
+    <div class="modal-overlay" id="notificationsModal" onclick="closeNotificationsPanel()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Notifications</h2>
+                <button onclick="closeNotificationsPanel()" style="background: none; border: none; font-size: 24px; cursor: pointer;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="notifications-list" class="list">
+                    <!-- Notifications loaded via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Dropdown -->
+    <div class="modal-overlay" id="menuModal" onclick="closeMenu()">
+        <div class="modal" style="bottom: auto; top: 50px; right: 0; left: auto; width: 200px; border-radius: 8px;" onclick="event.stopPropagation()">
+            <div class="list">
+                <a href="{% url 'profile' %}" class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-title"><i class="fas fa-user"></i> Edit Profile</div>
+                    </div>
+                </a>
+                <a href="#" onclick="toggleDarkMode()" class="list-item">
+                    <div class="list-item-content">
+                        <div class="list-item-title"><i class="fas fa-moon"></i> Dark Mode</div>
+                    </div>
+                </a>
+                <a href="{% url 'signout' %}" class="list-item" style="color: var(--danger);">
+                    <div class="list-item-content">
+                        <div class="list-item-title"><i class="fas fa-sign-out-alt"></i> Logout</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="{% static 'js/mobile-app.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+
+    <script>
+        // WebSocket connection for real-time notifications
+        initializeNotifications();
+    </script>
+</body>
+</html>

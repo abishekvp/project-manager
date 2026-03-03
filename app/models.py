@@ -4,18 +4,48 @@ from django.utils import timezone
 from django.contrib.auth.models import User, BaseUserManager
 
 class Project(models.Model):
+    STATUS_CHOICES = [
+        ('design', 'Design'),
+        ('in_progress', 'In Progress'),
+        ('review', 'Review'),
+        ('completed', 'Completed'),
+        ('on_hold', 'On Hold'),
+    ]
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64)
     description = models.TextField()
     manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     client_name = models.CharField(max_length=64, null=True)
-    status = models.CharField(max_length=10, default="DESIGN")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="design")
     created = models.DateTimeField(auto_now_add=True)
     started = models.DateTimeField(null=True)
     updated = models.DateTimeField(default=timezone.now)
     due = models.DateField(null=True)
+    priority = models.CharField(max_length=10, default='medium')
+
+    def get_progress(self):
+        """Calculate project completion percentage"""
+        tasks = self.task_set.all()
+        if not tasks.exists():
+            return 0
+        completed = tasks.filter(status='COMPLETE').count()
+        return (completed / tasks.count()) * 100 if tasks.count() > 0 else 0
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['-created']
 
 class Task(models.Model):
+    PRIORITY_CHOICES = [
+        ('urgent', 'Urgent'),
+        ('high', 'High'),
+        ('medium', 'Medium'),
+        ('low', 'Low'),
+    ]
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=64)
     description = models.TextField()
@@ -29,6 +59,14 @@ class Task(models.Model):
     started = models.DateTimeField(null=True)
     updated = models.DateTimeField(default=timezone.now)
     due = models.DateField(null=True)
+
+    # ClickUp-style features
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
+    time_estimate = models.IntegerField(null=True, blank=True, help_text="Time estimate in minutes")
+    time_logged = models.IntegerField(default=0, help_text="Time spent in minutes")
+    dependent_on = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='dependents')
+    email_notification_sent = models.BooleanField(default=False)
+    completion_notification_sent = models.BooleanField(default=False)
 
 
 class Assignment(models.Model):
@@ -132,3 +170,128 @@ class TwoFactorAuth(models.Model):
             self.save()
             return True
         return False
+
+
+class TaskComment(models.Model):
+    """Task comments with @mention support"""
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='comments')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_comments')
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    mentions = models.ManyToManyField(User, related_name='mentioned_in_comments', blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.author.username} on {self.task.name}"
+
+    def get_mentions(self):
+        """Extract @mentions from content"""
+        import re
+        pattern = r'@(\w+)'
+        matches = re.findall(pattern, self.content)
+        return matches
+
+
+class TaskAttachment(models.Model):
+    """File attachments for tasks"""
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='attachments')
+    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    file = models.FileField(upload_to='task_attachments/%Y/%m/%d/')
+    filename = models.CharField(max_length=255)
+    file_type = models.CharField(max_length=50)  # image, pdf, document, etc.
+    file_size = models.BigIntegerField()  # In bytes
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.filename}"
+
+
+class ActivityLog(models.Model):
+    """Activity log for tasks and projects"""
+    ACTION_CHOICES = [
+        ('created', 'Created'),
+        ('updated', 'Updated'),
+        ('assigned', 'Assigned'),
+        ('status_changed', 'Status Changed'),
+        ('comment_added', 'Comment Added'),
+        ('file_attached', 'File Attached'),
+        ('mentioned', 'Mentioned'),
+        ('completed', 'Completed'),
+    ]
+
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True, blank=True, related_name='activity_logs')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True, related_name='activity_logs')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activity_logs')
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    description = models.TextField()
+    old_value = models.TextField(null=True, blank=True)
+    new_value = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['task', '-created_at']),
+            models.Index(fields=['project', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.action} on {self.task.name if self.task else self.project.name}"
+
+
+class TaskNotification(models.Model):
+    """Real-time notifications for users"""
+    NOTIFICATION_TYPES = [
+        ('task_assigned', 'Task Assigned'),
+        ('task_completed', 'Task Completed'),
+        ('mentioned', 'Mentioned'),
+        ('comment_reply', 'Comment Reply'),
+        ('file_shared', 'File Shared'),
+        ('task_updated', 'Task Updated'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_notifications')
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    actor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications_sent', null=True)
+    is_read = models.BooleanField(default=False)
+    read_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'is_read', '-created_at']),
+        ]
+
+    def mark_as_read(self):
+        self.is_read = True
+        self.read_at = timezone.now()
+        self.save()
+
+    def __str__(self):
+        return f"{self.notification_type} - {self.user.username}"
+
+
+class TeamCollaborationWatcher(models.Model):
+    """Track who is watching/following tasks"""
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='watchers')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='watching_tasks')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('task', 'user')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} watching {self.task.name}"

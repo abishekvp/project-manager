@@ -1,0 +1,232 @@
+{% extends "base_mobile.html" %}
+
+{% block title %}Tasks - Project Manager{% endblock %}
+{% block header_title %}My Tasks{% endblock %}
+{% block nav_tasks %}active{% endblock %}
+
+{% block content %}
+<div class="page-content">
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterTasksByStatus('all')">All</button>
+        <button class="filter-btn" onclick="filterTasksByStatus('TODO')">To Do</button>
+        <button class="filter-btn" onclick="filterTasksByStatus('IN_PROGRESS')">In Progress</button>
+        <button class="filter-btn" onclick="filterTasksByStatus('REVIEW')">Review</button>
+        <button class="filter-btn" onclick="filterTasksByStatus('COMPLETE')">Completed</button>
+    </div>
+
+    <!-- Search Bar -->
+    <div style="padding: 0 16px; margin-bottom: 16px;">
+        <input type="text" id="search-input" placeholder="Search tasks..." style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px;" onkeyup="searchTasks(this.value)">
+    </div>
+
+    <!-- Tasks List -->
+    <div id="tasks-list" class="list" style="margin: 0 16px;">
+        <!-- Tasks loaded via JavaScript -->
+    </div>
+
+    <!-- Floating Action Button -->
+    <button onclick="window.location.href='{% url 'create-task' %}'" style="position: fixed; bottom: 100px; right: 16px; width: 56px; height: 56px; border-radius: 28px; background: var(--primary); color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);">
+        <i class="fas fa-plus"></i>
+    </button>
+</div>
+
+<!-- Task Detail Modal -->
+<div class="modal-overlay" id="taskDetailModal" onclick="closeModal('taskDetailModal')">
+    <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h2 id="modal-task-title">Task Details</h2>
+            <button onclick="closeModal('taskDetailModal')" style="background: none; border: none; font-size: 24px; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="task-detail-content">
+                <!-- Task details loaded via JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Load tasks on page load
+    loadTasksList();
+
+    async function loadTasksList(status = null) {
+        try {
+            const filters = {};
+            if (status && status !== 'all') {
+                filters.status = status;
+            }
+
+            const data = await getTasks(filters);
+            displayTasksList(data.tasks);
+        } catch (error) {
+            console.error('Error loading tasks:', error);
+        }
+    }
+
+    function displayTasksList(tasks) {
+        const list = document.getElementById('tasks-list');
+
+        if (!tasks || tasks.length === 0) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <div class="empty-state-text">No tasks found</div>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = tasks.map(task => `
+            <div class="list-item" onclick="openTaskDetailModal(${task.id})">
+                <div class="list-item-content">
+                    <div class="list-item-title">${task.name}</div>
+                    <div style="margin: 8px 0;">
+                        <span class="badge ${getPriorityBadgeClass(task.priority)}">${task.priority}</span>
+                        <span class="badge badge-primary" style="margin-left: 4px;">${task.status}</span>
+                    </div>
+                    ${task.due_date ? `
+                        <div class="list-item-subtitle">
+                            <i class="fas fa-calendar"></i> ${formatDate(task.due_date)}
+                        </div>
+                    ` : ''}
+                    ${task.progress > 0 ? `
+                        <div style="margin-top: 8px;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${task.progress}%"></div>
+                            </div>
+                            <div style="font-size: 11px; color: #999; text-align: right;">${task.progress}%</div>
+                        </div>
+                    ` : ''}
+                </div>
+                <i class="fas fa-chevron-right" style="color: #999;"></i>
+            </div>
+        `).join('');
+    }
+
+    function getPriorityBadgeClass(priority) {
+        switch(priority.toLowerCase()) {
+            case 'urgent': return 'badge-danger';
+            case 'high': return 'badge-warning';
+            case 'medium': return 'badge-primary';
+            default: return 'badge-success';
+        }
+    }
+
+    async function openTaskDetailModal(taskId) {
+        try {
+            const comments = await getTaskComments(taskId);
+            const activity = await getActivityFeed(taskId);
+
+            const task = (await getTasks()).tasks.find(t => t.id === taskId);
+
+            let html = `
+                <div>
+                    <div class="card">
+                        <div class="card-title">${task.name}</div>
+                        <div class="card-subtitle">${task.project}</div>
+                        <div class="card-content">${task.description || 'No description'}</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">Status & Details</div>
+                        <div style="font-size: 14px;">
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: #999;">Status</span>
+                                <strong>${task.status}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                <span style="color: #999;">Priority</span>
+                                <span class="badge ${getPriorityBadgeClass(task.priority)}">${task.priority}</span>
+                            </div>
+                            ${task.assigned_to ? `
+                                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                    <span style="color: #999;">Assigned</span>
+                                    <strong>${task.assigned_to}</strong>
+                                </div>
+                            ` : ''}
+                            ${task.due_date ? `
+                                <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                                    <span style="color: #999;">Due Date</span>
+                                    <strong>${formatDate(task.due_date)}</strong>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Comments Section -->
+                    <div class="card">
+                        <div class="card-title">Comments (${comments.comments.length})</div>
+                        <div id="comments-list" style="margin-top: 12px;">
+                            ${comments.comments.map(comment => `
+                                <div class="comment">
+                                    <div class="comment-author">${comment.author}</div>
+                                    <div class="comment-text">${comment.content}</div>
+                                    <div class="comment-time">${formatDate(comment.created_at)}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="comment-input">
+                            <input type="text" id="comment-input-${taskId}" placeholder="Add a comment..." style="width: 100%;">
+                            <button onclick="submitComment(${taskId})" style="background: var(--primary); color: white; border: none; border-radius: 20px; width: 40px; height: 40px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div style="display: flex; gap: 8px; margin-top: 16px;">
+                        <button class="btn btn-primary btn-block" onclick="updateTaskStatus(${taskId}, 'COMPLETE'); closeModal('taskDetailModal');">
+                            <i class="fas fa-check"></i> Complete Task
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('task-detail-content').innerHTML = html;
+            document.getElementById('taskDetailModal').classList.add('active');
+
+        } catch (error) {
+            console.error('Error loading task details:', error);
+            showToast('Error loading task details', 'error');
+        }
+    }
+
+    async function submitComment(taskId) {
+        const input = document.getElementById(`comment-input-${taskId}`);
+        const content = input.value.trim();
+
+        if (!content) return;
+
+        try {
+            await createComment(taskId, content);
+            input.value = '';
+            showToast('Comment added!', 'success');
+            // Reload task details
+            openTaskDetailModal(taskId);
+        } catch (error) {
+            console.error('Error submitting comment:', error);
+        }
+    }
+
+    function filterTasksByStatus(status) {
+        loadTasksList(status);
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    function searchTasks(query) {
+        if (query.length < 2) {
+            loadTasksList();
+            return;
+        }
+
+        getTasks({ search: query }).then(data => {
+            displayTasksList(data.tasks);
+        });
+    }
+</script>
+{% endblock %}

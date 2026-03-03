@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import views, api_views, rest_api
 
 urlpatterns = [
 
@@ -42,4 +42,42 @@ urlpatterns = [
     path('update-task', views.update_task, name='update-task'),
 
     path('test', views.test, name='test'),
+
+    # AJAX API Endpoints
+    path('api/tasks/', api_views.api_get_tasks, name='api-get-tasks'),
+    path('api/projects/', api_views.api_get_projects, name='api-get-projects'),
+    path('api/tasks/update-status/', api_views.api_update_task_status, name='api-update-task-status'),
+    path('api/tasks/log-time/', api_views.api_log_task_time, name='api-log-task-time'),
+    path('api/tasks/update-priority/', api_views.api_update_task_priority, name='api-update-task-priority'),
+    path('api/dashboard/stats/', api_views.api_get_dashboard_stats, name='api-dashboard-stats'),
+    path('api/kanban/', api_views.api_get_kanban_data, name='api-kanban-data'),
+
+    # Real-time Features API
+    # Notifications
+    path('api/notifications/', rest_api.api_get_notifications, name='api-get-notifications'),
+    path('api/notifications/mark-read/', rest_api.api_mark_notification_read, name='api-mark-notification-read'),
+    path('api/notifications/mark-all-read/', rest_api.api_mark_all_notifications_read, name='api-mark-all-read'),
+    path('api/notifications/unread-count/', rest_api.api_get_unread_notification_count, name='api-unread-count'),
+
+    # Task Comments
+    path('api/tasks/<int:task_id>/comments/', rest_api.api_get_task_comments, name='api-get-comments'),
+    path('api/tasks/<int:task_id>/comments/create/', rest_api.api_create_task_comment, name='api-create-comment'),
+    path('api/comments/<int:comment_id>/delete/', rest_api.api_delete_task_comment, name='api-delete-comment'),
+
+    # File Attachments
+    path('api/tasks/<int:task_id>/attachments/', rest_api.api_get_task_attachments, name='api-get-attachments'),
+    path('api/tasks/<int:task_id>/attachments/upload/', rest_api.api_upload_task_attachment, name='api-upload-attachment'),
+    path('api/attachments/<int:attachment_id>/download/', rest_api.api_download_attachment, name='api-download-attachment'),
+    path('api/attachments/<int:attachment_id>/delete/', rest_api.api_delete_attachment, name='api-delete-attachment'),
+
+    # Activity Feed
+    path('api/activity-feed/', rest_api.api_get_activity_feed, name='api-activity-feed'),
+
+    # Team Collaboration
+    path('api/tasks/<int:task_id>/watch/', rest_api.api_watch_task, name='api-watch-task'),
+    path('api/tasks/<int:task_id>/unwatch/', rest_api.api_unwatch_task, name='api-unwatch-task'),
+    path('api/tasks/<int:task_id>/watchers/', rest_api.api_get_task_watchers, name='api-get-watchers'),
+
+    # Dashboard Analytics
+    path('api/dashboard/analytics/', rest_api.api_get_dashboard_analytics, name='api-dashboard-analytics'),
 ]

@@ -1,0 +1,460 @@
+/* ProjectManager - Loading Spinners & AJAX UI */
+
+/* Global Loader */
+.global-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+.global-loader.hidden {
+    display: none;
+}
+
+.loader-content {
+    text-align: center;
+    color: white;
+}
+
+.spinner {
+    border: 4px solid rgba(0, 243, 255, 0.3);
+    border-top: 4px solid #00f3ff;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#loader-message {
+    font-size: 16px;
+    margin: 10px 0 0 0;
+    font-weight: 500;
+}
+
+/* Notifications */
+#notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid;
+    min-width: 300px;
+    color: #333;
+}
+
+.notification-success {
+    border-left-color: #39ff14;
+    background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%);
+}
+
+.notification-success i {
+    color: #39ff14;
+    font-size: 20px;
+}
+
+.notification-error {
+    border-left-color: #ff0000;
+    background: linear-gradient(135deg, #fff0f0 0%, #ffffff 100%);
+}
+
+.notification-error i {
+    color: #ff0000;
+    font-size: 20px;
+}
+
+.notification-info {
+    border-left-color: #00f3ff;
+    background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+}
+
+.notification-info i {
+    color: #00f3ff;
+    font-size: 20px;
+}
+
+.notification button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: #999;
+    margin-left: auto;
+    padding: 0;
+}
+
+.notification button:hover {
+    color: #333;
+}
+
+@keyframes slideInTop {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutTop {
+    from {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+}
+
+/* Tasks Table */
+.tasks-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tasks-table thead {
+    background: linear-gradient(135deg, #00f3ff 0%, #b026ff 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.tasks-table th {
+    padding: 16px;
+    text-align: left;
+    border: none;
+}
+
+.tasks-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+}
+
+.tasks-table tbody tr:hover {
+    background: #f9f9f9;
+}
+
+.task-name {
+    font-weight: 600;
+    color: #00f3ff;
+}
+
+.priority-urgent {
+    color: #ff0000;
+    font-weight: bold;
+}
+
+.priority-high {
+    color: #ff6600;
+    font-weight: bold;
+}
+
+.priority-medium {
+    color: #0066cc;
+    font-weight: bold;
+}
+
+.priority-low {
+    color: #00aa00;
+}
+
+.status-select {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.status-select:hover,
+.status-select:focus {
+    border-color: #00f3ff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 243, 255, 0.3);
+}
+
+/* Progress Bar */
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00f3ff, #39ff14);
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Action Buttons */
+.btn-icon {
+    background: none;
+    border: none;
+    color: #00f3ff;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 8px;
+    margin: 0 4px;
+    transition: all 0.3s ease;
+}
+
+.btn-icon:hover {
+    color: #b026ff;
+    transform: scale(1.2);
+}
+
+/* Kanban Board */
+.kanban-board {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 20px;
+    background: #0a0a10;
+    border-radius: 8px;
+    min-height: 600px;
+}
+
+.kanban-column {
+    flex: 0 0 300px;
+    background: linear-gradient(135deg, #12121c 0%, #1a1a2e 100%);
+    border-radius: 8px;
+    border: 1px solid #00f3ff30;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.kanban-header {
+    padding: 16px;
+    background: linear-gradient(135deg, #00f3ff 0%, #b026ff 100%);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.kanban-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.task-count {
+    background: rgba(255, 255, 255, 0.3);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.kanban-cards {
+    flex: 1;
+    padding: 12px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.kanban-cards::-webkit-scrollbar {
+    width: 6px;
+}
+
+.kanban-cards::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.kanban-cards::-webkit-scrollbar-thumb {
+    background: #00f3ff30;
+    border-radius: 3px;
+}
+
+.kanban-cards::-webkit-scrollbar-thumb:hover {
+    background: #00f3ff60;
+}
+
+.kanban-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 12px;
+    border-radius: 6px;
+    cursor: move;
+    border: 1px solid #00f3ff20;
+    transition: all 0.3s ease;
+    color: #d1d5db;
+}
+
+.kanban-card:hover {
+    transform: translateY(-4px);
+    border-color: #00f3ff60;
+    box-shadow: 0 8px 16px rgba(0, 243, 255, 0.2);
+}
+
+.kanban-card.dragging {
+    opacity: 0.5;
+}
+
+.card-priority {
+    margin-bottom: 8px;
+    height: 2px;
+}
+
+.kanban-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #00f3ff;
+    line-height: 1.4;
+}
+
+.card-assigned,
+.card-due,
+.card-time {
+    margin: 6px 0;
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+/* Responsive Tables */
+@media (max-width: 1024px) {
+    .tasks-table {
+        font-size: 14px;
+    }
+
+    .tasks-table th,
+    .tasks-table td {
+        padding: 12px;
+    }
+
+    .kanban-board {
+        gap: 15px;
+    }
+
+    .kanban-column {
+        flex: 0 0 280px;
+    }
+}
+
+@media (max-width: 768px) {
+    .tasks-table {
+        font-size: 12px;
+    }
+
+    .tasks-table th,
+    .tasks-table td {
+        padding: 8px;
+    }
+
+    .notification {
+        min-width: 280px;
+        right: 10px;
+        left: auto;
+    }
+
+    .kanban-board {
+        gap: 10px;
+        padding: 10px;
+        min-height: 500px;
+    }
+
+    .kanban-column {
+        flex: 0 0 250px;
+    }
+
+    .kanban-header h3 {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tasks-table {
+        font-size: 11px;
+        border-radius: 0;
+    }
+
+    .kanban-board {
+        gap: 8px;
+        padding: 8px;
+        border-radius: 0;
+    }
+
+    .kanban-column {
+        flex: 0 0 220px;
+    }
+
+    .kanban-cards {
+        padding: 8px;
+        gap: 8px;
+    }
+
+    .kanban-card {
+        padding: 10px;
+    }
+
+    .kanban-card h4 {
+        font-size: 13px;
+    }
+
+    .notification {
+        min-width: 250px;
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+}
+
+/* Utility Classes */
+.text-center {
+    text-align: center;
+}
+
+.text-gray-400 {
+    color: #9ca3af;
+}
+
+.hidden {
+    display: none !important;
+}
